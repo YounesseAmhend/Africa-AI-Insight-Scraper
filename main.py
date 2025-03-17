@@ -2,108 +2,26 @@ from fastapi import FastAPI
 import requests
 from bs4 import BeautifulSoup
 
-from source import Source
+from dtypes.source import Source
+from utils.trigger_file import TriggerFile
 
 
 app = FastAPI()
-trigger_words_ai = [
-    "AI",
-    "LLM",
-]
 
-trigger_phrases_ai = [
-    "Artificial Intelligence",
-    "Machine Learning",
-    "Deep Learning",
-    "Neural Network",
-    "Natural Language Processing",
-    "Computer Vision",
-    "Generative AI",
-    "Large Language Model",
-]
+ai_trigger_words_path = "data/ai/trigger_words.txt"
+ai_trigger_phrases_path = "data/ai/trigger_phrases.txt"
+africa_trigger_words_path = "data/africa/trigger_words.txt"
+africa_trigger_phrases_path = "data/africa/trigger_phrases.txt"
 
-trigger_words_africa = [
-    "Africa",
-    "African",
-    "Afrika",
-    "Afrikan",
-    "Afro",
-    "Sub-Saharan",
-    "Maghreb",
-    "Sahel",
-    "Horn of Africa",
-    "Algeria",
-    "Angola",
-    "Benin",
-    "Botswana",
-    "Burkina Faso",
-    "Burundi",
-    "Cameroon",
-    "Cape Verde",
-    "Central African Republic",
-    "Chad",
-    "Comoros",
-    "Congo",
-    "Côte d'Ivoire",
-    "Djibouti",
-    "Egypt",
-    "Equatorial Guinea",
-    "Eritrea",
-    "Eswatini",
-    "Ethiopia",
-    "Gabon",
-    "Gambia",
-    "Ghana",
-    "Guinea",
-    "Guinea-Bissau",
-    "Kenya",
-    "Lesotho",
-    "Liberia",
-    "Libya",
-    "Madagascar",
-    "Malawi",
-    "Mali",
-    "Mauritania",
-    "Mauritius",
-    "Morocco",
-    "Mozambique",
-    "Namibia",
-    "Niger",
-    "Nigeria",
-    "Rwanda",
-    "Sao Tome and Principe",
-    "Senegal",
-    "Seychelles",
-    "Sierra Leone",
-    "Somalia",
-    "South Africa",
-    "South Sudan",
-    "Sudan",
-    "Tanzania",
-    "Togo",
-    "Tunisia",
-    "Uganda",
-    "Zambia",
-    "Zimbabwe",
-]
+ai_trigger_words = TriggerFile(ai_trigger_words_path)
+ai_trigger_phrases = TriggerFile(ai_trigger_phrases_path)
+africa_trigger_words = TriggerFile(africa_trigger_words_path)
+africa_trigger_phrases = TriggerFile(africa_trigger_phrases_path)
 
-trigger_phrases_africa = [
-    "West Africa",
-    "East Africa",
-    "North Africa",
-    "Southern Africa",
-    "Central Africa",
-    "African Union",
-    "African Development",
-    "African Culture",
-    "African History",
-    "African Economy",
-    "African Politics",
-    "African Wildlife",
-    "African Diaspora",
-    "Pan-African",
-    "African Renaissance",
-]
+trigger_words_ai = ai_trigger_words.get()
+trigger_phrases_ai = ai_trigger_phrases.get()
+trigger_words_africa = africa_trigger_words.get()
+trigger_phrases_africa = africa_trigger_phrases.get()
 
 headers = {"User-Agent": "Mozilla/5.0"}
 
