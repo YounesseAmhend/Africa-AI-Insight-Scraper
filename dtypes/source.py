@@ -6,5 +6,5 @@ class Source(TypedDict):
     url: str
     trigger_words: list[str]
     trigger_phrases: list[str]
-    selector: Selector
+    selectors: Selector
     

@@ -1,38 +1,45 @@
+from time import sleep
+
 import requests
 from bs4 import BeautifulSoup
 from fastapi import FastAPI
+from selenium.webdriver.support import expected_conditions as EC
 
 from dtypes.source import Source
+from utils.my_driver import MyDriver
 from utils.trigger_file import TriggerFile
 
 app = FastAPI()
 
-ai_trigger_words_path = "./data/ai/trigger_words.txt"
-ai_trigger_phrases_path = "./data/ai/trigger_phrases.txt"
-africa_trigger_words_path = "./data/africa/trigger_words.txt"
-africa_trigger_phrases_path = "./data/africa/trigger_phrases.txt"
 
-ai_trigger_words = TriggerFile(ai_trigger_words_path)
-ai_trigger_phrases = TriggerFile(ai_trigger_phrases_path)
-africa_trigger_words = TriggerFile(africa_trigger_words_path)
-africa_trigger_phrases = TriggerFile(africa_trigger_phrases_path)
+
+AI_TRIGGER_WORDS_PATH = "./data/ai/trigger_words.txt"
+AI_TRIGGER_PHRASES_PATH = "./data/ai/trigger_phrases.txt"
+AFRICA_TRIGGER_WORDS_PATH = "./data/africa/trigger_words.txt"
+AFRICA_TRIGGER_PHRASES_PATH = "./data/africa/trigger_phrases.txt"
+
+ai_trigger_words = TriggerFile(AI_TRIGGER_WORDS_PATH)
+ai_trigger_phrases = TriggerFile(AI_TRIGGER_PHRASES_PATH)
+africa_trigger_words = TriggerFile(AFRICA_TRIGGER_WORDS_PATH)
+africa_trigger_phrases = TriggerFile(AFRICA_TRIGGER_PHRASES_PATH)
 
 trigger_words_ai = ai_trigger_words.get()
 trigger_phrases_ai = ai_trigger_phrases.get()
 trigger_words_africa = africa_trigger_words.get()
 trigger_phrases_africa = africa_trigger_phrases.get()
 
-headers = {"User-Agent": "Mozilla/5.0"}
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 sources: list[Source] = [
     {
-        "selector": {
+        "selectors": {
             "title":"header > h3 > a",
             "link": "header > h3 > a",
             "author":{
                 "link": ".entry-author > a",
                 "name": "strong[itemprop='name']",
                 },
+            "load_more_button": "a[data-g1-next-page-url]",
             },
         "trigger_phrases": trigger_phrases_africa,
         "trigger_words": trigger_words_africa,
@@ -45,15 +52,19 @@ sources: list[Source] = [
 def root():
     all_results: list[dict] = [] 
     
+    
+    
     for source in sources:
         url = source["url"]
         trigger_phrases = source["trigger_phrases"]
         trigger_words = source["trigger_words"]
-        selector = source["selector"]
+        selector = source["selectors"]
         author_selector= selector["author"]
         
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
+        MyDriver.get(url)
+        MyDriver.scroll_to_end(selector["load_more_button"], timeout_s=10)
+        html = MyDriver.get_html()
+        soup = BeautifulSoup(html, "html.parser")
         
         elements = soup.select(selector["title"])
         links = soup.select(selector["link"])
@@ -86,7 +97,7 @@ def root():
                 if link is None:
                     continue
                 link = str(link)
-                author_response = requests.get(url=link, headers=headers)
+                author_response = requests.get(url=link, headers=HEADERS)
                 author_soup = BeautifulSoup(author_response.text, "html.parser")
                 
                 author_name_element = author_soup.select_one(author_selector["name"])
