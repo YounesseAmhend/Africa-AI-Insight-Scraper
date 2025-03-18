@@ -4,7 +4,8 @@ from dtypes.selector import Selector
 
 class Source(TypedDict):
     url: str
-    trigger_words: list[str]
-    trigger_phrases: list[str]
+
+    trigger_ai: bool
+    trigger_africa: bool
     selectors: Selector
     

@@ -41,9 +41,9 @@ sources: list[Source] = [
                 },
             "load_more_button": "a[data-g1-next-page-url]",
             },
-        "trigger_phrases": trigger_phrases_africa,
-        "trigger_words": trigger_words_africa,
         "url": "https://aipressroom.com/events/",
+        "trigger_africa": True,
+        "trigger_ai": False,
     },
 ]
 
@@ -56,8 +56,8 @@ def root():
     
     for source in sources:
         url = source["url"]
-        trigger_phrases = source["trigger_phrases"]
-        trigger_words = source["trigger_words"]
+        trigger_ai = source["trigger_ai"]
+        trigger_africa = source["trigger_africa"]
         selector = source["selectors"]
         author_selector= selector["author"]
         
@@ -75,23 +75,40 @@ def root():
         
         for i, element in enumerate(elements):
             title = element.get_text()
-            words = title.split()
             link = links[i].get('href')
             
             # Check for trigger words or phrases
-            should_add = False
+            should_add_africa = False
             
-            for trigger_word in trigger_words:
-                if trigger_word in words:
-                    should_add = True
-                    break
-                    
-            if not should_add:  # Only check phrases if we haven't found a trigger word
-                for trigger_phrase in trigger_phrases:
-                    if trigger_phrase in title:
-                        should_add = True
-                        break
+            # Function to check if text contains any trigger words or phrases
+            def contains_triggers(text: str, trigger_words: list[str], trigger_phrases: list[str]) -> bool:
+                words = text.split()
+                # Check for trigger words
+                for word in trigger_words:
+                    if word in words:
+                        return True
+                # Check for trigger phrases
+                for phrase in trigger_phrases:
+                    if phrase in text:
+                        return True
+                return False
             
+            # Check for Africa triggers if needed
+            should_add_africa = False
+            if trigger_africa:
+                should_add_africa = contains_triggers(
+                        title, 
+                        trigger_words_africa, 
+                        trigger_phrases_africa,
+                    )
+            
+            # Check for AI triggers if needed
+            should_add_ai = False
+            if trigger_ai:
+                should_add_ai = contains_triggers(title, trigger_words_ai, trigger_phrases_ai)
+            
+            # Determine if we should add this result based on trigger requirements
+            should_add = should_add_ai == trigger_ai and should_add_africa == trigger_africa
             # Add the result if it matches any trigger
             if should_add:
                 if link is None:
