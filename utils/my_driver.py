@@ -47,9 +47,6 @@ class MyDriver:
         while True:
             try:
                 # Wait for the "Load More" button to appear
-                load_more_button =  wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
-
-                # Scroll to the button and click it
                 last_height = __class__.driver.execute_script("return document.body.scrollHeight")
                 while True:
                     # Scroll down to bottom
@@ -62,17 +59,23 @@ class MyDriver:
                         break
                     last_height = new_height
                 sleep(1)  # Smooth scrolling
+                
+                load_more_button =  wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
+                # Scroll to the button and click it
                 load_more_button.click()
 
                 # Wait for new content to load
                 sleep(2)
             except Exception as e:
-                print("No more 'Load More' button found or error:", e)
+                print("No more 'Load More' button found or error:")
                 break
             
             
     @staticmethod
     def get_html() -> str:
         return __class__.driver.page_source
-
+        
+        
+        
+        
         
