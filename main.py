@@ -107,34 +107,39 @@ def root():
             should_add_africa = False
 
             # Function to check if text contains any trigger words or phrases
-            def contains_triggers(
-                text: str, trigger_words: list[str], trigger_phrases: list[str]
-            ) -> bool:
+            def contains_triggers(text: str, trigger_words: list[str], trigger_phrases: list[str],) -> bool:
                 words = text.split()
                 for word in trigger_words:
-                    return word in words
+                    if word.lower() in [w.lower() for w in words]:
+                        return True
+                # Check for trigger phrases
                 for phrase in trigger_phrases:
-                    return phrase in text
+                    if phrase.lower() in text.lower():
+                        return True
                 return False
 
             # Check for Africa triggers if needed
             should_add_africa = False
             if trigger_africa:
+                print("just for debug 2")
+                
                 should_add_africa = contains_triggers(
-                    title,
-                    trigger_words_africa,
+                    title, 
+                    trigger_words_africa, 
                     trigger_phrases_africa,
                 )
-                if(should_add_africa):
-                    print(element)
-
+                if "africa" in title:
+                    print("Found " ,title)
+            
             # Check for AI triggers if needed
             should_add_ai = False
             if trigger_ai:
                 should_add_ai = contains_triggers(
-                    title, trigger_words_ai, trigger_phrases_ai
+                    title, 
+                    trigger_words_ai, 
+                    trigger_phrases_ai,
                 )
-
+            
             # Determine if we should add this result based on trigger requirements
             should_add = (
                 should_add_ai == trigger_ai and should_add_africa == trigger_africa
@@ -184,6 +189,3 @@ def root():
     return all_results
 
 
-@app.post("/")
-def he():
-    return {"Some data": "dataefddd"}
