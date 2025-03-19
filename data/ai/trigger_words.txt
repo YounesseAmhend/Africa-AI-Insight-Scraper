@@ -1,2 +1,4 @@
 AI
 LLM
+IA
+Modèle de Langage

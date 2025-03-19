@@ -17,9 +17,6 @@ class MyDriver:
     service = Service(EDGE_DRIVER_PATH)
     options = webdriver.EdgeOptions()
     # options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
@@ -30,7 +27,8 @@ class MyDriver:
                 get: () => undefined
             });
         '''
-    })
+    }) 
+    
     DEFAULT_TIMEOUT_S = 2.5
     wait = WebDriverWait(driver, timeout=DEFAULT_TIMEOUT_S)
     
@@ -39,7 +37,7 @@ class MyDriver:
         __class__.driver.get(url, )
         
     @staticmethod
-    def scroll_to_end(css_selector: str, timeout_s: float = DEFAULT_TIMEOUT_S) -> None:
+    def scroll_to_end(css_selector: str | None, timeout_s: float = DEFAULT_TIMEOUT_S) -> None:
         wait = __class__.wait
         if timeout_s != __class__.DEFAULT_TIMEOUT_S:
             wait = WebDriverWait(__class__.driver, timeout=timeout_s)
@@ -47,7 +45,8 @@ class MyDriver:
         while True:
             try:
                 # Wait for the "Load More" button to appear
-                load_more_button =  wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
+                if css_selector is not None:
+                    load_more_button =  wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
 
                 # Scroll to the button and click it
                 last_height = __class__.driver.execute_script("return document.body.scrollHeight")
