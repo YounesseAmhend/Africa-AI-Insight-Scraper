@@ -1,4 +1,3 @@
-
 import os
 from time import sleep
 
@@ -11,15 +10,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class MyDriver:
-    
+
     EDGE_DRIVER_PATH = "bin/msedgedriver.exe" if os.name == 'nt' else "bin/msedgedriver" # check if windows
-    
+
     service = Service(EDGE_DRIVER_PATH)
     options = webdriver.EdgeOptions()
     # options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
@@ -30,23 +26,25 @@ class MyDriver:
                 get: () => undefined
             });
         '''
-    })
+    }) 
+
     DEFAULT_TIMEOUT_S = 2.5
     wait = WebDriverWait(driver, timeout=DEFAULT_TIMEOUT_S)
-    
+
     @staticmethod
     def get(url: str)-> None:
         __class__.driver.get(url, )
-        
+
     @staticmethod
-    def scroll_to_end(css_selector: str, timeout_s: float = DEFAULT_TIMEOUT_S) -> None:
+    def scroll_to_end(css_selector: str | None, timeout_s: float = DEFAULT_TIMEOUT_S) -> None:
         wait = __class__.wait
         if timeout_s != __class__.DEFAULT_TIMEOUT_S:
             wait = WebDriverWait(__class__.driver, timeout=timeout_s)
-            
+
         while True:
             try:
                 # Wait for the "Load More" button to appear
+
                 last_height = __class__.driver.execute_script("return document.body.scrollHeight")
                 while True:
                     # Scroll down to bottom
@@ -59,8 +57,14 @@ class MyDriver:
                         break
                     last_height = new_height
                 sleep(1)  # Smooth scrolling
-                
-                load_more_button =  wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
+
+                # Scroll to the button and click it
+
+                if css_selector is not None:
+                    load_more_button = wait.until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector))
+                    )
+
                 # Scroll to the button and click it
                 load_more_button.click()
 
@@ -69,13 +73,7 @@ class MyDriver:
             except Exception as e:
                 print("No more 'Load More' button found or error:")
                 break
-            
-            
+
     @staticmethod
     def get_html() -> str:
         return __class__.driver.page_source
-        
-        
-        
-        
-        

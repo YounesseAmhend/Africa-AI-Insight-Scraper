@@ -1,10 +1,24 @@
    
    Artificial Intelligence
+   Intelligence Artificielle
+   الذكاء الاصطناعي
    Machine Learning
+   Apprentissage Automatique
+   التعلم الآلي
    Deep Learning
+   Apprentissage Profond
+   التعلم العميق
    Neural Network
+   Réseau de Neurones
+   الشبكة العصبية
    Natural Language Processing
+   Traitement du Langage Naturel
+   معالجة اللغة الطبيعية
    Computer Vision
+   Vision par Ordinateur
+   رؤية الحاسوب
    Generative AI
+   IA Générative
+   الذكاء الاصطناعي التوليدي
    Large Language Model
-   
+   Modèle de Langage à Grande Échelle
