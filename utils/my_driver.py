@@ -8,6 +8,14 @@ from selenium.webdriver.edge.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    ElementNotInteractableException,
+    StaleElementReferenceException,
+    WebDriverException,
+    ElementClickInterceptedException
+)
 
 class MyDriver:
 
@@ -40,6 +48,7 @@ class MyDriver:
         wait = __class__.wait
         if timeout_s != __class__.DEFAULT_TIMEOUT_S:
             wait = WebDriverWait(__class__.driver, timeout=timeout_s)
+        print("Handling infinite scrolling...")
 
         while True:
             try:
@@ -73,7 +82,74 @@ class MyDriver:
             except Exception as e:
                 print("No more 'Load More' button found or error:")
                 break
+            
+    @staticmethod
+    def handle_pagination(css_selector: str, timeout_s: float = DEFAULT_TIMEOUT_S) -> str:
+        print("Handling pagination...")
+        wait = __class__.wait
+        if timeout_s != __class__.DEFAULT_TIMEOUT_S:
+            wait = WebDriverWait(__class__.driver, timeout=timeout_s)
+        html: str =""
+        while True:
+                # Wait for the "Load More" button to appear
+            html += __class__.get_html()
 
+            last_height = __class__.driver.execute_script("return document.body.scrollHeight")
+            while True:
+                # Scroll down to bottom
+                __class__.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                # Wait to load page
+                sleep(1)
+                # Calculate new scroll height and compare with last scroll height
+                new_height = __class__.driver.execute_script("return document.body.scrollHeight")
+                if new_height == last_height:
+                    break
+                last_height = new_height
+            sleep(1)  # Smooth scrolling
+
+                # Scroll to the button and click it
+            try:
+                print("Next Button")
+                next_button = wait.until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector))
+                )
+
+                # Scroll the button into view
+                __class__.driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
+                
+                # Add a small delay to ensure the page is settled
+                sleep(0.5)
+                
+                # Try JavaScript click first to avoid intercepted clicks
+                try:
+                    __class__.driver.execute_script("arguments[0].click();", next_button)
+                except Exception:
+                    # If JavaScript click fails, try moving to the element first
+                    actions = ActionChains(__class__.driver)
+                    actions.move_to_element(next_button).click().perform()
+
+                # Wait for new content to load
+                sleep(2)
+            except Exception as e:
+                # print(f"No more 'Next' button found or error: {str(e)}")
+                print(f"Error type: {type(e).__name__}")
+                if isinstance(e, TimeoutException):
+                    print("Timeout waiting for next button to be clickable")
+                elif isinstance(e, ElementNotInteractableException):
+                    print("Next button found but not clickable")
+                elif isinstance(e, NoSuchElementException):
+                    print("Next button element not found in the DOM")
+                elif isinstance(e, StaleElementReferenceException):
+                    print("Next button reference is stale (page may have changed)")
+                elif isinstance(e, ElementClickInterceptedException):
+                    print("Click was intercepted by another element")
+                break
+        return html
+    
     @staticmethod
     def get_html() -> str:
         return __class__.driver.page_source
+    
+    @staticmethod
+    def close():
+        __class__.driver.quit()
