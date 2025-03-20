@@ -1,15 +1,12 @@
-from time import sleep
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
 from fastapi import FastAPI
-from selenium.webdriver.support import expected_conditions as EC
 
 from dtypes.author import Author
 from dtypes.source import Source
-from utils.my_driver import MyDriver
-from urllib.parse import urlparse
-
+from utils.my_driver import CustomDriver
 from utils.trigger_file import TriggerFile
 
 app = FastAPI()
@@ -63,12 +60,24 @@ sources: list[Source] = [
     #     "trigger_africa": True,
     #     "trigger_ai": True,
     # },
+    # {
+    #     "url": "https://um6p.ma/actualites",
+    #     "selectors": {
+    #         "next_button": ".pager__item--next > a",
+    #         "title": ".post-title > a",
+    #         "link": ".post-title > a",
+    #         "author": None,
+    #         "load_more_button": None,
+    #     },
+    #     "trigger_africa": False,
+    #     "trigger_ai": True,
+    # },
     {
-        "url": "https://um6p.ma/actualites",
+        "url": "https://www.up.ac.za/news",
         "selectors": {
-            "next_button": ".pager__item--next > a",
-            "title": ".post-title > a",
-            "link": ".post-title > a",
+            "next_button": "li.next > a",
+            "title": "ul.news-list > li > a",
+            "link": "ul.news-list > li > a",
             "author": None,
             "load_more_button": None,
         },
@@ -95,15 +104,15 @@ def root():
         
         print(f"Navigating to URL: {url}")
         html: str = ""
-        MyDriver.get(url)
+        CustomDriver.get(url)
         
         if next_button_selector is None:
             print(f"No pagination found. Using scroll to end with load_more_selector: {load_more_selector}")
-            MyDriver.scroll_to_end(load_more_selector, timeout_s=10)
-            html = MyDriver.get_html()
+            CustomDriver.scroll_to_end(load_more_selector, timeout_s=10)
+            html = CustomDriver.get_html()
         else:
             print(f"Pagination found. Using next button selector: {next_button_selector}")
-            html = MyDriver.handle_pagination(next_button_selector, timeout_s=10)
+            html = CustomDriver.handle_pagination(next_button_selector, timeout_s=10)
         
         print("Parsing HTML with BeautifulSoup")
         soup = BeautifulSoup(html, "html.parser")
@@ -123,7 +132,7 @@ def root():
 
         for i, element in enumerate(elements):
             print(f"Processing element {i+1}/{len(elements)}")
-            title = element.get_text()
+            title = element.get_text().strip()
             link = links[i].get("href")
             link = str(link)
             # Check if link is relative (starts with /) and make it absolute
