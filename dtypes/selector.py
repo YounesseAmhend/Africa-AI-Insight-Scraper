@@ -1,5 +1,4 @@
 from typing import TypedDict
-
 from .author import Author
 
 class Selector(TypedDict):
