@@ -7,6 +7,7 @@ class Selector(TypedDict):
     link: str
     author: Author
     load_more_button: str # Some website don't have it 
+    # location: str
     # body: str
     # event_date: str
     # post_date: str
