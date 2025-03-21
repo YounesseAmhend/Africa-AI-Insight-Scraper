@@ -87,8 +87,9 @@ sources: list[Source] = [
 ]
 
 
-@app.get("/")
+@app.get("/scrape-batch")
 def root():
+    """Start a background task to scrape multiple websites"""
     all_results: list[dict] = []
     for source in sources:
         print(f"Processing source: {source['url']}")
@@ -242,3 +243,8 @@ def root():
     print(f"Total results found: {len(all_results)}")
     print(all_results)
     return all_results
+
+@app.get("/health")
+async def health_check():
+    """Endpoint for health checking"""
+    return {"status": "ok"}
