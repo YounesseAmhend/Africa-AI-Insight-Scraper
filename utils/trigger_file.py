@@ -1,3 +1,4 @@
+import logging
 import os
 
 class TriggerFile:
@@ -31,7 +32,7 @@ class TriggerFile:
         """
         with open(self.file_path, 'r', encoding='utf-8') as f:
             lines = [line.strip() for line in f if line.strip() != item.strip()]
-            
+
         with open(self.file_path, 'w', encoding='utf-8') as f:
             f.write("\n".join(lines) + "\n")
 
@@ -48,7 +49,7 @@ class TriggerFile:
                         for line in f 
                         if line.strip() # will continue if the line is empty
                     ]
-            
+
         with open(self.file_path, 'w', encoding='utf-8') as f:
             f.write("\n".join(lines) + "\n")
 
@@ -59,8 +60,17 @@ class TriggerFile:
             List of trigger items
         """
         with open(self.file_path, 'r', encoding='utf-8') as f:
-            return [
+            data = [
                 line.strip()
                 for line in f
                 if line.strip() # will skip if the line is empty
             ]
+            expected_len = len(set(data))
+            data_len = len(data)
+            
+            if data_len != expected_len:
+                logging.warning(
+                    f"Trigger file({self.file_path}) contains duplicates - found {data_len - expected_len} duplicate entries."
+                )
+                data = list(set(data))
+            return data

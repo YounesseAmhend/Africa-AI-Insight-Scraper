@@ -1,24 +1,47 @@
-   
    Artificial Intelligence
-   Intelligence Artificielle
-   الذكاء الاصطناعي
-   Machine Learning
-   Apprentissage Automatique
-   التعلم الآلي
-   Deep Learning
-   Apprentissage Profond
-   التعلم العميق
-   Neural Network
-   Réseau de Neurones
-   الشبكة العصبية
-   Natural Language Processing
-   Traitement du Langage Naturel
-   معالجة اللغة الطبيعية
-   Computer Vision
-   Vision par Ordinateur
-   رؤية الحاسوب
-   Generative AI
-   IA Générative
-   الذكاء الاصطناعي التوليدي
-   Large Language Model
-   Modèle de Langage à Grande Échelle
+Intelligence Artificielle
+الذكاء الاصطناعي
+Machine Learning
+Apprentissage Automatique
+التعلم الآلي
+Deep Learning
+Apprentissage Profond
+التعلم العميق
+Neural Network
+Réseau de Neurones
+الشبكة العصبية
+Natural Language Processing
+Traitement du Langage Naturel
+معالجة اللغة الطبيعية
+Computer Vision
+Vision par Ordinateur
+رؤية الحاسوب
+Generative AI
+IA Générative
+الذكاء الاصطناعي التوليدي
+Large Language Model
+Modèle de Langage à Grande Échelle
+Reinforcement Learning
+Apprentissage par Renforcement
+التعلم المعزز
+Transformer Model
+Modèle Transformeur
+نموذج المحول
+ChatGPT
+GPT-4
+BERT
+Automated Decision Making
+Prise de Décision Automatisée
+صنع القرار الآلي
+Autonomous Systems
+Systèmes Autonomes
+الأنظمة المستقلة
+Data Science
+Science des Données
+علم البيانات
+Neural Processing
+Traitement Neuronal
+المعالجة العصبية
+Cognitive Computing
+Informatique Cognitive
+الحوسبة المعرفية
