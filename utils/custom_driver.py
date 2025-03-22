@@ -17,8 +17,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from settings import DEBUG_MODE
-from utils.infinte_scrolling_iterator import InfiniteScrollIterator
-from utils.pagination_iterator import CustomDriverProtocol, PaginationIterator
+from utils.infinite_scrolling_iterator import InfiniteScrollIterator
+from utils.pagination_iterator import PaginationIterator
 
 
 class CustomDriver:

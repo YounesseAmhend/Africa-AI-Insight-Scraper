@@ -56,7 +56,6 @@ Execute the following command to start the scraper:
 - Use class and ID selectors when possible
 - Avoid overly complex selectors that are brittle
 
-
 ## **Project Structure**
 
 The project is organized into the following directories:

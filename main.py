@@ -73,7 +73,7 @@ def root():
         trigger_africa = source["trigger_africa"]
         selector = source["selectors"]
 
-        author_selector = selector["author"]
+        # author_selector = selector["author"]
         next_button_selector = selector["next_button"]
         load_more_selector = selector["load_more_button"]
 
@@ -183,32 +183,32 @@ def root():
 
                 author: Author | None = None
 
-                if author_selector is not None:
-                    logging.debug(
-                        f"Looking for author with selector: {author_selector}"
-                    )
-                    author_name_element = author_soup.select_one(
-                        author_selector["name"]
-                    )
-                    author_link_selector = author_selector["link"]
-                    if author_link_selector:
-                        author_link_element = author_soup.select_one(
-                            author_link_selector
-                        )
+                # if author_selector is not None:
+                #     logging.debug(
+                #         f"Looking for author with selector: {author_selector}"
+                #     )
+                #     author_name_element = author_soup.select_one(
+                #         author_selector["name"]
+                #     )
+                #     author_link_selector = author_selector["link"]
+                #     if author_link_selector:
+                #         author_link_element = author_soup.select_one(
+                #             author_link_selector
+                #         )
 
-                    author = {
-                        "name": (
-                            author_name_element.get_text()
-                            if author_name_element
-                            else "Unknown"
-                        ),
-                        "link": (
-                            str(author_link_element.get("href"))
-                            if author_link_element
-                            else None
-                        ),
-                    }
-                    logging.debug(f"Found author: {author['name']}")
+                #     author = {
+                #         "name": (
+                #             author_name_element.get_text()
+                #             if author_name_element
+                #             else "Unknown"
+                #         ),
+                #         "link": (
+                #             str(author_link_element.get("href"))
+                #             if author_link_element
+                #             else None
+                #         ),
+                #     }
+                #     logging.debug(f"Found author: {author['name']}")
 
                 logging.debug(f"Adding result: {title}")
                 source_results.append(
