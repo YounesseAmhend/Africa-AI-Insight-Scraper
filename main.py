@@ -52,7 +52,7 @@ except Exception as e:
     trigger_phrases_ai = []
     trigger_words_africa = []
     trigger_phrases_africa = []
-    # THe app should break because otherwise we will get a lot of problems
+    # The app should break because otherwise we will get a lot of problems
     if DEBUG_MODE:
         raise e
 
@@ -63,6 +63,7 @@ HEADERS = {
 
 @app.get("/")
 def root():
+
     all_results: list[dict] = []
     for source in SOURCES:
         logging.debug(f"Processing source: {source['url']}")
@@ -79,22 +80,27 @@ def root():
         logging.debug(f"Navigating to URL: {url}")
         html: str = ""
         driver = CustomDriver()
-        driver.get(url)
+        try:
+            driver.get(url)
 
-        if next_button_selector is None:
-            logging.debug(
-                f"No pagination found. Using scroll to end with load_more_selector: {load_more_selector}"
-            )
-            driver.scroll_to_end(load_more_selector, timeout_s=10)
-            html = driver.get_html()
-        else:
-            logging.debug(
-                f"Pagination found. Using next button selector: {next_button_selector}"
-            )
-            html = driver.handle_pagination(next_button_selector, timeout_s=10)
-            
+            if next_button_selector is None:
+                logging.debug(
+                    f"No pagination found. Using scroll to end with load_more_selector: {load_more_selector}"
+                )
+                driver.handle_infinite_scroll(load_more_selector, timeout_s=10)
+                html = driver.get_html()
+            else:
+                logging.debug(
+                    f"Pagination found. Using next button selector: {next_button_selector}"
+                )
+                html = driver.handle_pagination(
+                    next_button_selector, timeout_s=10, max_pages=5
+                )
+        except Exception as e:
+            print(e)
+            driver.quit()
         del driver
-        
+
         logging.debug("Parsing HTML with BeautifulSoup")
         soup = BeautifulSoup(html, "html.parser")
 
@@ -117,7 +123,10 @@ def root():
             title = element.get_text().strip()
             link = links[i].get("href")
             if isinstance(link, list):
-                link = link[0]  # just get the first link
+                link = "".join(
+                    link
+                )  # If the link is too long it get divided into a list so we need to get back together
+
             # Check if link is relative (starts with /) and make it absolute
             if link and link.startswith("/"):
                 # Extract domain from the source URL
@@ -179,11 +188,13 @@ def root():
                         f"Looking for author with selector: {author_selector}"
                     )
                     author_name_element = author_soup.select_one(
-                        str(author_selector["name"])
+                        author_selector["name"]
                     )
-                    author_link_element = author_soup.select_one(
-                        str(author_selector["link"])
-                    )
+                    author_link_selector = author_selector["link"]
+                    if author_link_selector:
+                        author_link_element = author_soup.select_one(
+                            author_link_selector
+                        )
 
                     author = {
                         "name": (
@@ -215,5 +226,3 @@ def root():
     logging.debug(f"Total results found: {len(all_results)}")
     logging.debug(all_results)
     return all_results
-
-

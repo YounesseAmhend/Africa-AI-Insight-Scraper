@@ -7,21 +7,21 @@ AI_TRIGGER_PHRASES_PATH = "./data/ai/trigger_phrases.txt"
 AFRICA_TRIGGER_WORDS_PATH = "./data/africa/trigger_words.txt"
 AFRICA_TRIGGER_PHRASES_PATH = "./data/africa/trigger_phrases.txt"
 SOURCES: list[Source] = [
-    # {
-    #     "selectors": {
-    #         "next_button": None,
-    #         "title": "header > h3 > a",
-    #         "link": "header > h3 > a",
-    #         "author": {
-    #             "link": ".entry-author > a",
-    #             "name": "strong[itemprop='name']",
-    #         },
-    #         "load_more_button": "a[data-g1-next-page-url]",
-    #     },
-    #     "url": "https://aipressroom.com/events/",
-    #     "trigger_africa": True,
-    #     "trigger_ai": False,
-    # },
+    {
+        "selectors": {
+            "next_button": None,
+            "title": "header > h3 > a",
+            "link": "header > h3 > a",
+            "author": {
+                "link": ".entry-author > a",
+                "name": "strong[itemprop='name']",
+            },
+            "load_more_button": "a[data-g1-next-page-url]",
+        },
+        "url": "https://aipressroom.com/events/",
+        "trigger_africa": True,
+        "trigger_ai": False,
+    },
     # {
     #     "selectors": {
     #         "next_button": None,
@@ -49,16 +49,16 @@ SOURCES: list[Source] = [
     #     "trigger_africa": False,
     #     "trigger_ai": True,
     # },
-    {
-        "url": "https://www.up.ac.za/news",
-        "selectors": {
-            "next_button": "li.next > a",
-            "title": "ul.news-list > li > a",
-            "link": "ul.news-list > li > a",
-            "author": None,
-            "load_more_button": None,
-        },
-        "trigger_africa": False,
-        "trigger_ai": True,
-    },
+    # {
+    #     "url": "https://www.up.ac.za/news",
+    #     "selectors": {
+    #         "next_button": "li.next > a",
+    #         "title": "ul.news-list > li > a",
+    #         "link": "ul.news-list > li > a",
+    #         "author": None,
+    #         "load_more_button": None,
+    #     },
+    #     "trigger_africa": False,
+    #     "trigger_ai": True,
+    # },
 ]

@@ -17,6 +17,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from settings import DEBUG_MODE
+from utils.infinte_scrolling_iterator import InfiniteScrollIterator
+from utils.pagination_iterator import CustomDriverProtocol, PaginationIterator
 
 
 class CustomDriver:
@@ -70,52 +72,26 @@ class CustomDriver:
             url,
         )
 
-    def scroll_to_end(
-        self, css_selector: str | None, timeout_s: float = DEFAULT_TIMEOUT_S
-    ) -> None:
-        wait = self.wait
-        if timeout_s != __class__.DEFAULT_TIMEOUT_S:
-            wait = WebDriverWait(self.driver, timeout=timeout_s)
+    def handle_infinite_scroll(
+        self,
+        css_selector: str | None,
+        timeout_s: float = DEFAULT_TIMEOUT_S,
+        max_loads: int = 20,
+    ) -> str:
         logging.debug("Handling infinite scrolling...")
 
-        while True:
-            try:
-                # Wait for the "Load More" button to appear
+        
+        # Create and return the iterator
+        html = ""
+        for page in InfiniteScrollIterator(
+            self,
+            css_selector,
+            timeout_s,
+            max_loads,
+        ):
+            html += page
 
-                last_height = self.driver.execute_script(
-                    "return document.body.scrollHeight"
-                )
-                while True:
-                    # Scroll down to bottom
-                    self.driver.execute_script(
-                        "window.scrollTo(0, document.body.scrollHeight);"
-                    )
-                    # Wait to load page
-                    sleep(1)
-                    # Calculate new scroll height and compare with last scroll height
-                    new_height = self.driver.execute_script(
-                        "return document.body.scrollHeight"
-                    )
-                    if new_height == last_height:
-                        break
-                    last_height = new_height
-                sleep(1)  # Smooth scrolling
-
-                # Scroll to the button and click it
-
-                if css_selector is not None:
-                    load_more_button = wait.until(
-                        EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector))
-                    )
-
-                # Scroll to the button and click it
-                load_more_button.click()
-
-                # Wait for new content to load
-                sleep(2)
-            except Exception as e:
-                logging.error("No more 'Load More' button found or error:")
-                break
+        return html
 
     def handle_pagination(
         self,
@@ -124,80 +100,84 @@ class CustomDriver:
         max_pages: int = 20,
     ) -> str:
         logging.debug("Handling pagination...")
-        wait = self.wait
 
+        html: str = ""
+
+        for page in PaginationIterator(
+            self,
+            css_selector,
+            timeout_s,
+            limit=max_pages,
+        ):
+            html += page
+
+        return html
+
+    def nextPage(
+        self,
+        css_selector: str,
+        timeout_s: float = DEFAULT_TIMEOUT_S,
+    ) -> None:
+
+        wait = self.wait
         if timeout_s != self.DEFAULT_TIMEOUT_S:
             wait = WebDriverWait(self.driver, timeout=timeout_s)
 
-        html: str = ""
-        page_count: int = 1
+        last_height = self.driver.execute_script("return document.body.scrollHeight")
+
         while True:
-            html += self.get_html()
-
-            if page_count > max_pages:
-                break
-
-            last_height = self.driver.execute_script(
-                "return document.body.scrollHeight"
+            # Scroll down to bottom
+            self.driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);"
             )
-            while True:
-                # Scroll down to bottom
-                self.driver.execute_script(
-                    "window.scrollTo(0, document.body.scrollHeight);"
-                )
-                # Wait to load page
-                sleep(1)
-                # Calculate new scroll height and compare with last scroll height
-                new_height = self.driver.execute_script(
-                    "return document.body.scrollHeight"
-                )
-                if new_height == last_height:
-                    break
-                last_height = new_height
-            sleep(1)  # Smooth scrolling
-
-            try:
-                # Wait for the "Next" button to appear
-                logging.debug(f"Next Page {page_count + 1}")
-                next_button = wait.until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector))
-                )
-
-                # Scroll the button into view
-                self.driver.execute_script(
-                    "arguments[0].scrollIntoView(true);", next_button
-                )
-
-                # Add a small delay to ensure the page is settled
-                sleep(0.5)
-
-                # Try JavaScript click first to avoid intercepted clicks
-                try:
-                    self.driver.execute_script("arguments[0].click();", next_button)
-                except Exception:
-                    # If JavaScript click fails, try moving to the element first
-                    self.actions.move_to_element(next_button).click().perform()
-                finally:
-                    page_count += 1
-                # Wait for new content to load
-                sleep(2)
-            except Exception as e:
-                # logging.debug(f"No more 'Next' button found or error: {str(e)}")
-                logging.error(f"Error type: {type(e).__name__}")
-                if isinstance(e, TimeoutException):
-                    logging.error("Timeout waiting for next button to be clickable")
-                elif isinstance(e, ElementNotInteractableException):
-                    logging.error("Next button found but not clickable")
-                elif isinstance(e, NoSuchElementException):
-                    logging.error("Next button element not found in the DOM")
-                elif isinstance(e, StaleElementReferenceException):
-                    logging.error(
-                        "Next button reference is stale (page may have changed)"
-                    )
-                elif isinstance(e, ElementClickInterceptedException):
-                    logging.error("Click was intercepted by another element")
+            # Wait to load page
+            sleep(0.5)
+            # Calculate new scroll height and compare with last scroll height
+            new_height = self.driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
                 break
-        return html
+            last_height = new_height
+        sleep(1)  # Smooth scrolling
+
+        try:
+            # Wait for the "Next" button to appear
+            next_button = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector))
+            )
+
+            # Scroll the button into view
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView(true);", next_button
+            )
+
+            # Add a small delay to ensure the page is settled
+            sleep(0.5)
+
+            # Try JavaScript click first to avoid intercepted clicks
+            try:
+                self.driver.execute_script("arguments[0].click();", next_button)
+            except Exception:
+                # If JavaScript click fails, try moving to the element first
+                self.actions.move_to_element(next_button).click().perform()
+
+            # Wait for new content to load
+            sleep(2)
+
+        except Exception as e:
+            # logging.debug(f"No more 'Next' button found or error: {str(e)}")
+            logging.error(f"Error type: {type(e).__name__}")
+            if isinstance(e, TimeoutException):
+                logging.error("Timeout waiting for next button to be clickable")
+            elif isinstance(e, ElementNotInteractableException):
+                logging.error("Next button found but not clickable")
+            elif isinstance(e, NoSuchElementException):
+                logging.error("Next button element not found in the DOM")
+            elif isinstance(e, StaleElementReferenceException):
+                logging.error("Next button reference is stale (page may have changed)")
+            elif isinstance(e, ElementClickInterceptedException):
+                logging.error("Click was intercepted by another element")
+
+            raise StopIteration
 
     def get_html(self) -> str:
         return self.driver.page_source
@@ -212,8 +192,8 @@ class CustomDriver:
         except Exception as e:
             # Can't use logging here as it might be unavailable during garbage collection
             import sys
+
             print(f"Error during driver cleanup: {str(e)}", file=sys.stderr)
-            
-            
+
     def quit(self):
         self.driver.quit()
