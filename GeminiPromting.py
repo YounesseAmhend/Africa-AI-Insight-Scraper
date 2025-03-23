@@ -138,7 +138,7 @@ def generate(prompt_text):
             # Stream the generated content and print it chunk by chunk in real-time
             for chunk in client.models.generate_content_stream(
                 model=model,
-                contents=contents,
+                contents=contents[0],  # here contents=contents,  can also work and it's the one in the documentation
                 config=generate_content_config,
             ):
                 print(chunk.text, end="")  # Print each chunk without newlines between chunks
