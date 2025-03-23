@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from fastapi import FastAPI, status
+from fastapi import FastAPI
 
 from constants import *
 from constants import SOURCES
