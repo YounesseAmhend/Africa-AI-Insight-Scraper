@@ -5,3 +5,5 @@ requests
 selenium
 google-genai
 python-dotenv
+grpcio 
+grpcio-tools

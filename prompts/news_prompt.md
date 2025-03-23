@@ -1,4 +1,4 @@
-You will be provided with HTML code representing a webpage. Your task is to extract specific information from this HTML using CSS selectors compatible with BeautifulSoup. 
+You will be provided with HTML code representing a webpage. Your task is to extract specific information from this HTML using CSS selectors compatible with BeautifulSoup.
 
 Generate a Python dictionary conforming to the following structure:
 
@@ -11,26 +11,40 @@ Generate a Python dictionary conforming to the following structure:
 }
 ```
 
-### Instructions
+### **Instructions**
 
-1. **Title**: Identify the CSS selector for the HTML elements containing the title of each news article.
-2. **Link**: Identify the CSS selector for the HTML elements containing the links to each news article.
-3. **Load More Button**: Identify the CSS selector for the "load more" button if the webpage uses infinite scrolling or a "load more" feature. If not present, set this to `None`.
-4. **Next Button**: Identify the CSS selector for the "next" page button if the webpage uses pagination. If not present, set this to `None`.
+1. **Title Extraction**: Locate and specify the precise CSS selector that targets the HTML elements containing the headline or title of each news article. Ensure the selector captures all relevant titles on the page.
+
+2. **Link Identification**: Determine the exact CSS selector that points to the HTML elements containing the hyperlinks to individual news articles. The selector should consistently retrieve all article links.
+
+3. **Load More Detection**: If the webpage implements infinite scrolling or a "load more" functionality, identify the CSS selector for the corresponding button or trigger element. If this feature is absent, explicitly set this value to `None`.
+
+4. **Pagination Navigation**: If the site uses pagination, identify the correct **"Next Page"** button using the following rules:
+   - **DO NOT select elements based on their position (e.g., `:last-child`, `:nth-child`, `:not(:first-child)`, etc.).**  
+   - **DO NOT assume that the last `<li>` in the pagination is always the "Next" button it could be "Last".**  
+   - Look for an element containing **text related to "Next"** (e.g., `"Next"`, `">"`, `"→"`).
+   - If there is a **specific class or ID** used for the "Next" button (e.g., `.next`, `.pagination-next`), prefer using that.
+   - If multiple pagination buttons exist, **select only the one explicitly leading to the next page**.
+   - If the site does not have a "Next" button, return `None`.
+
+### **Examples of Correct Selectors for "Next" Button**
+
+✅ **Based on class name:** `"ul.pagination li.next a"`  
+✅ **Based on button text:** `"ul.pagination li a:contains('Next')"`  
+✅ **Based on a specific ID:** `"#nextPageButton"`  
+⛔ **Incorrect (position-based):** `"ul.pagination li:last-child a"`  
+⛔ **Incorrect (overly general):** `"ul.pagination li:not(.disabled) a"`
 
 ### Output Format
 
 Ensure the output is a Python dictionary in the exact format shown above, with no additional comments or explanations.
 
-### Example Output
-
 ```python
-{
-    "title": "ul.news-list li h4",
-    "link": "ul.news-list li a",
-    "load_more_button": None,
-    "next_button": "ul.pagination li.next a"
-}
+    class Selector(TypedDict):
+        title: str
+        link: str 
+        load_more_button: str | None # Some website don't have it 
+        next_button: str | None
 ```
 
 ### HTML Code for Analysis

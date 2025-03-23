@@ -1,19 +1,7 @@
 import logging
-from typing import Protocol
 
-from selenium.webdriver.edge.webdriver import WebDriver
 from settings import DEBUG_MODE
-
-
-class CustomDriverProtocol(Protocol):
-    driver: WebDriver
-    def get_html(self) -> str: ...
-    def nextPage(
-        self,
-        
-        css_selector: str,
-        timeout_s: float,
-    ) -> None: ...
+from protocols.custom_driver_protocol import CustomDriverProtocol
 
 
 class PaginationIterator:
@@ -33,17 +21,17 @@ class PaginationIterator:
     def __next__(self) -> str:
         if self.currentPage > self.limit:
             raise StopIteration
-        
+
         if self.currentPage > 1:
             try:
                 logging.debug(f"Navigating to page {self.currentPage}")
                 self.driver.nextPage(self.css_selector, self.timeout_s)
             except StopIteration:
                 raise StopIteration
-        
+
         html = self.driver.get_html()
         self.currentPage += 1
-        
+
         return html
 
     def __iter__(self):

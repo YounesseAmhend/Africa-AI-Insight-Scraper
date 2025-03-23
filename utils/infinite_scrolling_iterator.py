@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from utils.pagination_iterator import CustomDriverProtocol
+from protocols.custom_driver_protocol import CustomDriverProtocol
 
 
 class InfiniteScrollIterator:
@@ -19,7 +19,7 @@ class InfiniteScrollIterator:
         custom_driver: CustomDriverProtocol,
         css_selector: str | None,
         timeout_s: float,
-        max_loads: int,
+        max_loads: int = 20,
     ):
 
         self.wait = WebDriverWait(custom_driver.driver, timeout=timeout_s)
@@ -63,9 +63,7 @@ class InfiniteScrollIterator:
             if self.css_selector:
                 try:
                     load_more_button = self.wait.until(
-                        EC.element_to_be_clickable(
-                            (By.CSS_SELECTOR, self.css_selector)
-                        )
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, self.css_selector))
                     )
                     # Scroll to the button and click it
                     self.custom_driver.driver.execute_script(
@@ -77,9 +75,7 @@ class InfiniteScrollIterator:
                     sleep(2)
                     # Get the updated page content
                     self.current_load += 1
-                    new_html: str = self.custom_driver.get_html()[
-                        len(self.html) :
-                    ]
+                    new_html: str = self.custom_driver.get_html()[len(self.html) :]
                     self.html += new_html
                     return new_html
                 except (TimeoutException, NoSuchElementException):

@@ -1,0 +1,2109 @@
+You will be provided with HTML code representing a webpage. Your task is to extract specific information from this HTML using CSS selectors compatible with BeautifulSoup.
+
+Generate a Python dictionary conforming to the following structure:
+
+```python
+{
+    "title": "CSS selector for the title of each news article",
+    "link": "CSS selector for the link to each news article",
+    "load_more_button": "CSS selector for the 'load more' button (if present, otherwise None)",
+    "next_button": "CSS selector for the 'next' page button (if present, otherwise None)"
+}
+```
+
+### **Instructions**
+
+1. **Title Extraction**: Locate and specify the precise CSS selector that targets the HTML elements containing the headline or title of each news article. Ensure the selector captures all relevant titles on the page.
+
+2. **Link Identification**: Determine the exact CSS selector that points to the HTML elements containing the hyperlinks to individual news articles. The selector should consistently retrieve all article links.
+
+3. **Load More Detection**: If the webpage implements infinite scrolling or a "load more" functionality, identify the CSS selector for the corresponding button or trigger element. If this feature is absent, explicitly set this value to `None`.
+
+4. **Pagination Navigation**: If the site uses pagination, identify the correct **"Next Page"** button using the following rules:
+   - **DO NOT select elements based on their position (e.g., `:last-child`, `:nth-child`, `:not(:first-child)`, etc.).**  
+   - **DO NOT assume that the last `<li>` in the pagination is always the "Next" button it could be "Last".**  
+   - Look for an element containing **text related to "Next"** (e.g., `"Next"`, `">"`, `"→"`).
+   - If there is a **specific class or ID** used for the "Next" button (e.g., `.next`, `.pagination-next`), prefer using that.
+   - If multiple pagination buttons exist, **select only the one explicitly leading to the next page**.
+   - If the site does not have a "Next" button, return `None`.
+
+### **Examples of Correct Selectors for "Next" Button**
+
+✅ **Based on class name:** `"ul.pagination li.next a"`  
+✅ **Based on button text:** `"ul.pagination li a:contains('Next')"`  
+✅ **Based on a specific ID:** `"#nextPageButton"`  
+⛔ **Incorrect (position-based):** `"ul.pagination li:last-child a"`  
+⛔ **Incorrect (overly general):** `"ul.pagination li:not(.disabled) a"`
+
+### Output Format
+
+Ensure the output is a Python dictionary in the exact format shown above, with no additional comments or explanations.
+
+```python
+    class Selector(TypedDict):
+        title: str
+        link: str 
+        load_more_button: str | None # Some website don't have it 
+        next_button: str | None
+```
+
+### HTML Code for Analysis
+
+```html
+<div id="wbg-aem-target" class="wbg-aem-target"></div>
+<input type="hidden" name="wcmmode" class="WCMmode" value="DISABLED">
+<link href="/etc/designs/wbr/clientlibs/css/home-banner.css" type="text/css" rel="stylesheet">
+<header>
+<a tabindex="0" id="skip-to-main-content" class="visually-hidden focusable" href="#main">Skip to Main Navigation</a>
+<div class="lp__navbar lp__navbar_default ">
+<div class="container">
+<div class="header block" data-block-name="header" data-block-status="loaded">
+<div class="nav-wrapper">
+<nav id="nav" aria-expanded="false">
+<div class="nav-hamburger" title="Hamburger"><button type="button" aria-controls="nav" aria-label="Open navigation" data-toggle="collapse" data-target="#menuItems" aria-expanded="false"><span class="nav-hamburger-icon collapsed"></span></button>
+</div>
+<div class="section nav-brand" data-section-status="loaded" style="">
+<div class="default-content-wrapper"><a href="https://www.banquemondiale.org/ext/fr/home" title="World Bank Logo">
+<picture>
+<source type="image/webp" srcset="https://www.banquemondiale.org/ext/fr/media_126535c42baf1011489becd8e4bf2b5a47d638577.svg?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+<source type="image/webp" srcset="https://www.banquemondiale.org/ext/fr/media_126535c42baf1011489becd8e4bf2b5a47d638577.svg?width=750&amp;format=webply&amp;optimize=medium">
+<source type="image/svg+xml" srcset="https://www.banquemondiale.org/ext/fr/media_126535c42baf1011489becd8e4bf2b5a47d638577.svg?width=2000&amp;format=svg&amp;optimize=medium" media="(min-width: 600px)">
+<img loading="lazy" alt="World Bank Logo" src="https://www.banquemondiale.org/ext/fr/media_126535c42baf1011489becd8e4bf2b5a47d638577.svg?width=750&amp;format=svg&amp;optimize=medium" width="243" height="34">
+</picture>
+</a></div>
+</div>
+<div class="section nav-sections" data-section-status="loaded" style="">
+<div class="default-content-wrapper">
+<p class="auto-image-container">
+<picture>
+<source type="image/webp" srcset="https://www.banquemondiale.org/ext/fr/media_1309e5a58406d881f447945ab01ce4f6ceea52c3b.svg?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+<source type="image/webp" srcset="https://www.banquemondiale.org/ext/fr/media_1309e5a58406d881f447945ab01ce4f6ceea52c3b.svg?width=750&amp;format=webply&amp;optimize=medium">
+<source type="image/svg+xml" srcset="https://www.banquemondiale.org/ext/fr/media_1309e5a58406d881f447945ab01ce4f6ceea52c3b.svg?width=2000&amp;format=svg&amp;optimize=medium" media="(min-width: 600px)">
+<img loading="lazy" alt="Trending" src="https://www.banquemondiale.org/ext/fr/media_1309e5a58406d881f447945ab01ce4f6ceea52c3b.svg?width=750&amp;format=svg&amp;optimize=medium" width="15" height="11">
+</picture>
+</p><a href="https://www.banquemondiale.org/fr/topic/gender/overview?intcid=ecr_hp_trendingdata_fr_ext" target="_blank">
+<p><span>Tendances en chiffres&nbsp;</span><span>Le PIB par habitant
+pourrait augmenter de 20 % si on parvenait à combler les
+disparités hommes-femmes dans l'emploi&nbsp;</span></p>
+</a>
+</div>
+<div class="nav-menu-overlay collapse" id="menuItems">
+<div class="nav-menu" aria-hidden="true">
+<div class="nav-menu-column left" style="display: flex;">
+<ul>
+<li tabindex="0" aria-expanded="true" class="selected"><span textcontent=""></span><a href="https://www.banquemondiale.org/ext/fr/who-we-are">Nous connaître </a></li>
+<li tabindex="0" aria-expanded="false"><span textcontent=""></span><a href="https://www.banquemondiale.org/fr/what-we-do">Nos activités&nbsp;</a></li>
+<li tabindex="0" aria-expanded="false"><span textcontent=""></span><a href="https://www.worldbank.org/en/country">Notre présence mondiale&nbsp;</a></li>
+<li tabindex="0" aria-expanded="false"><span textcontent=""></span><a href="https://www.banquemondiale.org/fr/understanding-poverty">Nos modes d'action&nbsp;</a></li>
+<li tabindex="0" aria-expanded="false"><span textcontent=""></span><a href="https://www.banquemondiale.org/fr/work-with-us">Nous rejoindre</a></li>
+<li tabindex="0" aria-expanded="false"><span textcontent=""></span><a href="https://www.banquemondiale.org/fr/news">Actualités</a></li>
+</ul>
+</div>
+<div class="nav-menu-column right" style="display: none;"><button class="nav-menu-overlay-back" aria-label="go back" style="display: none;"></button>
+<p class="submenu-main-title" style="display: none;"><a></a></p>
+<ul id="submenu_0" class="submenu" style="display: flex;">
+<li class="" role="link">À PROPOS DU GROUPE DE LA BANQUE MONDIALE&nbsp;<ul>
+<li class=""><a href="https://www.banquemondiale.org/ext/fr/who-we-are/leadership">Organisation&nbsp;<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/partners">Partenaires<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/archive/history">Notre
+histoire<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/archive/home">Service des archives
+(a)<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/statement/2021/11/11/world-bank-group-anti-racism-charter">Charte
+contre le racisme<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">EXPERTS ET DIRIGEANTS<ul>
+<li class=""><a href="https://president.groupebanquemondiale.org/fr/president">Bureau du
+président&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/leadership/governors">Conseil des
+gouverneurs<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/leadership/directors">Conseil des
+administrateurs&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/leadership/managers">Équipe de
+direction<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/people/all">Experts&nbsp;<span></span></a>
+</li>
+</ul>
+</li>
+<li class="" role="link">RESPONSABILITÉ INSTITUTIONNELLE&nbsp;<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/annual-report">Rapports
+annuels&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/who-we-are/betterbank">Initiative pour une Banque meilleure<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/access-to-information">Accès à
+l’information&nbsp;<span></span></a></li>
+<li class=""><a href="https://accountability.worldbank.org/en/home">Mécanisme de redevabilité
+(a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://scorecard.worldbank.org/en/scorecard/home">Fiche de performance du
+Groupe de la Banque mondiale (a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/programs/accountability/data-privacy">Confidentialité
+des données (a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://financesapp.worldbank.org/summaries/ibrd-ida/#ibrd-net/">Informations
+financières sur le Groupe de la Banque mondiale (a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/about/unit/integrity-vice-presidency">Vice-présidence
+Intégrité (a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.inspectionpanel.org/francais">Panel
+d’inspection&nbsp;<span></span></a></li>
+<li class=""><a href="https://projects.banquemondiale.org/fr/projects-operations/products-and-services/grievance-redress-service">Service
+de règlement des plaintes&nbsp;<span></span></a></li>
+<li class=""><a href="https://ieg.worldbankgroup.org/">Groupe indépendant d’évaluation
+(a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.cao-ombudsman.org/">Médiation, conformité et conseil
+(a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://policies.worldbank.org/en/policies?k=General%20Conditions%20for%20IBRD&amp;type=published">Politiques
+et procédures (a)&nbsp;<span></span></a></li>
+</ul>
+</li>
+<li class="footer" role="link">INSTITUTIONS<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/who-we-are/ibrd">BIRD<span></span></a>
+</li>
+<li class=""><a href="https://ida.banquemondiale.org/fr/ida">IDA<span></span></a></li>
+<li class=""><a href="https://www.ifc.org/fr/about">IFC<span></span></a></li>
+<li class=""><a href="https://www.miga.org/">MIGA (a)<span></span></a></li>
+<li class=""><a href="https://icsid.worldbank.org/">CIRDI (a)<span></span></a></li>
+</ul>
+</li>
+</ul>
+<ul id="submenu_1" class="submenu" style="display: none;">
+<li class="" role="link">PROJETS DE DÉVELOPPEMENT&nbsp;<ul>
+<li class=""><a href="https://projects.banquemondiale.org/fr/projects-operations/projects-home">Projets&nbsp;<span></span></a>
+<ul>
+<li class=""><a href="https://projects.banquemondiale.org/fr/projects-operations/project-country?lang=fr&amp;page=">Par
+pays<span></span></a></li>
+<li class=""><a href="https://projects.banquemondiale.org/fr/projects-operations/project-sector?lang=fr&amp;page=">Par
+secteur<span></span></a></li>
+<li class=""><a href="https://projects.banquemondiale.org/fr/projects-operations/project-theme?lang=fr&amp;page=">Par
+thème<span></span></a></li>
+</ul>
+</li>
+<li class=""><a href="https://www.worldbank.org/en/projects-operations/country-strategies">Collaboration
+avec les pays (a)&nbsp;<span></span></a>
+<ul>
+<li class=""><a href="https://projects.banquemondiale.org/fr/projects-operations/environmental-and-social-policies">Politiques
+environnementales et sociales&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/projects-operations/products-and-services1/Suppliers-Hub">Passation
+de marchés (a)<span></span></a></li>
+</ul>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/results">Résultats&nbsp;<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">PRODUITS ET SERVICES&nbsp;<ul>
+<li class=""><a href="https://www.worldbank.org/en/what-we-do/products-and-services">Produits
+financiers et services-conseil (a)<span></span></a></li>
+<li class=""><a href="https://treasury.worldbank.org/en/about/unit/treasury">Trésorerie
+(a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://treasury.worldbank.org/en/about/unit/treasury/asset-management">Gestion
+d’actifs (a)&nbsp;<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">PARTAGE DE CONNAISSANCES<ul>
+<li class=""><a href="https://academy.worldbank.org/en/home">Académie du Groupe de la Banque
+mondiale (a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/research">Recherche et publications
+(a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://donnees.banquemondiale.org/">Données<span></span></a></li>
+<li class=""><a href="https://wbg.edcast.com/">Apprentissage (a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic">Les thèmes du
+développement<span></span></a></li>
+<li class=""><a href="https://openknowledge.worldbank.org/home">Bibliothèque
+numérique&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/programs/trust-funds-and-programs">Fonds
+fiduciaires (a)&nbsp;<span></span></a></li>
+</ul>
+</li>
+</ul>
+<ul id="submenu_2" class="submenu" style="display: none;">
+<li class="" role="link">RÉGIONS<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/region/afr">Afrique<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/region/eap/overview">Asie de l’Est et
+Pacifique<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/region/eca/overview">Europe et Asie
+centrale<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/region/lac/overview">Amérique latine et
+Caraïbes<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/region/mena">Moyen-Orient et Afrique du
+Nord<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/region/sar/overview">Asie du Sud
+<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">GROUPES DE PAYS<ul>
+<li class=""><a href="https://www.worldbank.org/en/country/eu">Union européenne
+(a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/country/mic">Pays à revenu intermédiaire
+(a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/country/caribbean">Organisation des États des
+Caraïbes orientales (a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/country/pacificislands">Îles du Pacifique
+(a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/country/smallstates">Petits États
+(a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/country/gcc">Conseil de coopération du Golfe
+(a)&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/country/westerneurope">Europe de l’Ouest
+(a)<span></span></a></li>
+</ul>
+</li>
+<li>
+<ul class="browse-country">NAVIGATION PAR PAYS
+<div><input type="text" placeholder="Rechercher par le nom du pays " id="search-country" data-toggle="dropdown" aria-label="country dropdown" aria-expanded="false">
+<p type="button" class="lp__dropdown-toggle" data-toggle="dropdown" aria-label="country dropdown" aria-expanded="false"><span class="sr-only" aria-hidden="true">country dropdown</span></p>
+<ul class="country-list dropdown-menu">
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/afghanistan/en">Afghanistan</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/albania">Albanie</a><ul><li lang="sq"><a class="dropdown-item" href="https://www.worldbank.org/sq/country/albania">shqipe</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/algeria">Algérie</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/algeria">English</a></li><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/algeria">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/germany">Allemagne</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/angola">Angola</a><ul><li lang="pt"><a class="dropdown-item" href="https://www.worldbank.org/pt/country/angola">Portuguese</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Antigua-et-Barbuda</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/argentina">Argentine</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/argentina">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/armenia">Arménie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/austria">Autriche</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/azerbaijan">Azerbaïdjan</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/gcc">Bahreïn</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/bangladesh">Bangladesh</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/belarus">Bélarus</a><ul><li lang="ru"><a class="dropdown-item" href="https://www.vsemirnyjbank.org/ru/country/belarus">Русский</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/belgium">Belgique</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/belgium">English</a></li><li><a class="dropdown-item" href="https://www.worldbank.org/en/country/netherlands">Néerlandais</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Belize</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/benin">Bénin</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/benin">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/bhutan">Bhoutan</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/bolivia">Bolivie</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/bolivia">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/bosniaandherzegovina">Bosnie-Herzégovine</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/botswana">Botswana</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/brazil">Brésil</a><ul><li lang="pt"><a class="dropdown-item" href="https://www.worldbank.org/pt/country/brazil">Português</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/bulgaria">Bulgarie</a><ul><li lang="bg"><a class="dropdown-item" href="https://www.worldbank.org/bg/country/bulgaria">Bulgarian</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/burkinafaso">Burkina Faso</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/burkinafaso">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/burundi">Burundi</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/burundi">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/cambodia">Cambodge</a><ul><li lang="km"><a class="dropdown-item" href="https://www.worldbank.org/km/country/cambodia">Khmer</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/cameroon">Cameroun</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/cameroon">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/canada">Canada</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/canada">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/capeverde">Cabo Verde</a><ul><li lang="pt"><a class="dropdown-item" href="https://www.worldbank.org/pt/country/capeverde">Português</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/centralafricanrepublic">Centrafricaine, Rép.</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/centralafricanrepublic">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/chile">Chili</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/chile">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/china">Chine</a><ul><li lang="zh"><a class="dropdown-item" href="https://www.shihang.org/zh/country/china">中文</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/colombia">Colombie</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/colombia">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/comoros">Comores</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/comoros">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/drc">Congo, R.D.</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/drc">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/congo">Congo, Rép.</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/congo">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/korea">Corée</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/costarica">Costa Rica</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/costarica">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/cotedivoire">Côte d'Ivoire</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/cotedivoire">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/croatia">Croatie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/denmark">Danemark</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/denmark">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/djibouti">Djibouti</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Dominique</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/dominicanrepublic">Dominicaine, Rép.</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/dominicanrepublic">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/ecuador">Équateur</a>
+<ul><li lang="es"> <a class="dropdown-item" href="https://www.bancomundial.org/es/country/ecuador">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/egypt">Égypte (Rép. arabe d’)</a><ul><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/egypt">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/gcc">Émirats arabes unis</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/unitedstates">États-Unis d'Amérique</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eritrea">Érythrée</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/spain">Espagne</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/spain">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eumemberstates">Estonie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/ethiopia">Éthiopie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Fidji, Îles</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/finland">Finlande</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/france">France</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/france">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/gabon">Gabon</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/gabon">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/gambia">Gambie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/georgia">Géorgie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/ghana">Ghana</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/greece">Grèce</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Grenade</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/guatemala">Guatemala</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/guatemala">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/guinea">Guinée</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/guinea">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/guineabissau">Guinée-Bissau</a><ul><li lang="pt"><a class="dropdown-item" href="https://www.worldbank.org/pt/country/guineabissau">Português</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/equatorialguinea">Guinée équatoriale</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Guyana</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/haiti">Haïti</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/haiti">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/honduras">Honduras</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/honduras">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eumemberstates">Hongrie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/india">Inde</a><ul><li lang="hi"><a class="dropdown-item" href="https://www.worldbank.org/hi/country/india">Hindi</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/indonesia">Indonésie</a><ul><li lang="in"><a class="dropdown-item" href="https://www.worldbank.org/in/country/indonesia">Bahasa</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/iran">Iran, Rép. islamique</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/iraq">Irak</a><ul><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/iraq">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/iceland">Islande</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/il">Israël</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/italy">Italie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/jamaica">Jamaïque</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/japan">Japon</a><ul><li lang="ja"><a class="dropdown-item" href="https://www.worldbank.org/ja/country/japanl">日本語</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/jordan">Jordanie</a><ul><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/jordan/ar">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/kazakhstan">Kazakhstan</a><ul><li lang="ru"><a class="dropdown-item" href="https://www.vsemirnyjbank.org/ru/country/kazakhstan">Русский</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/kenya">Kenya</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/kyrgyzrepublic">Kirghize, République</a><ul><li lang="ru"><a class="dropdown-item" href="https://www.vsemirnyjbank.org/ru/country/kyrgyzrepublic">Русский</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Kiribati</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/kosovo">Kosovo</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/gcc">Koweït</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/lao">Lao, RDP</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/lebanon">Liban</a><ul><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/lebanon">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/lesotho">Lesotho</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/liberia">Libéria</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/libya">Libye</a><ul><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/libya">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eumemberstates">Lituanie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/luxembourg">Luxembourg</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/luxembourg">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/northmacedonia">Macédoine</a><ul><li lang="mk"><a class="dropdown-item" href="https://www.worldbank.org/mk/country/macedonia">македонски</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/madagascar">Madagascar</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/madagascar">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/malawi">Malawi</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/malaysia">Malaisie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/maldives">Maldives</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/mali">Mali</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/mali">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/morocco">Maroc</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/morocco">English</a></li><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/morocco">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Marshall, Îles</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/mauritania">Mauritanie</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/mauritania">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/mauritius">Maurice, Île</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/mauritius">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/mexico">Mexique</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/mexico">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Micronésie, États fédérés</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/moldova">Moldova</a><ul><li lang="ro"><a class="dropdown-item" href="https://www.worldbank.org/ro/country/moldova">română</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/mongolia">Mongolie</a><ul><li lang="mn"><a class="dropdown-item" href="https://www.worldbank.org/mn/country/mongolia">Монгол</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/montenegro">Monténégro</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/mozambique">Mozambique</a><ul><li lang="pt"><a class="dropdown-item" href="https://www.worldbank.org/pt/country/mozambique">Português</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/myanmar">Myanmar</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/namibia">Namibie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/nepal">Népal</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/nicaragua">Nicaragua</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/nicaragua">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/niger">Niger</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/niger">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/nigeria">Nigéria</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/norway">Norvège</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/gcc">Oman</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/uganda">Ouganda</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/uzbekistan">Ouzbékistan</a><ul><li lang="ru"><a class="dropdown-item" href="https://www.vsemirnyjbank.org/ru/country/uzbekistan">Русский</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pakistan">Pakistan</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Palaos</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/panama">Panama</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/panama">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/png">Papouasie-Nouvelle-Guinée</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/paraguay">Paraguay</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/paraguay">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/netherlands">Pays-Bas</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/peru">Pérou</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/peru">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/philippines">Philippines</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/poland">Pologne</a><ul><li lang="pl"><a class="dropdown-item" href="https://www.worldbank.org/pl/country/poland">Polski</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/portugal">Portugal</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/gcc">Qatar</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/romania">Roumanie</a><ul><li lang="ro"><a class="dropdown-item" href="https://www.worldbank.org/ro/country/romania">Română</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/unitedkingdom">Royaume-Uni</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/russia">Russie</a><ul><li lang="ru"><a class="dropdown-item" href="https://www.vsemirnyjbank.org/ru/country/russia">Русский</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/rwanda">Rwanda</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/rwanda">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Samoa</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/saotome">Sao Tomé-et-Principe</a><ul><li lang="pt"><a class="dropdown-item" href="https://www.worldbank.org/pt/country/saotome">Português</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/elsalvador">El Salvador</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/elsalvador">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/senegal">Sénégal</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/senegal">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/serbia">Serbie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/seychelles">Seychelles</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/seychelles">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/sierraleone">Sierra Leone</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/singapore">Singapour</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eumemberstates">Slovaquie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eumemberstates">Slovénie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Salomon, Îles</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/somalia">Somalie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/srilanka">Sri Lanka</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">St. Kitts et Nevis</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Ste-Lucie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">St-Vincent-et-les Grenadines</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/sudan">Soudan</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/southsudan">Soudan du Sud</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Suriname</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/sweden">Suède</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/switzerland">Suisse</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eswatini">Swaziland</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/syria">Syrie</a><ul><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/syria">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/tajikistan">Tadjikistan</a><ul><li lang="ru"><a class="dropdown-item" href="https://www.vsemirnyjbank.org/ru/country/tajikistan">Русский</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/tanzania">Tanzanie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/chad">Tchad</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/chad">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/eumemberstates">Tchèque, Rép.</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/thailand">Thaïlande</a><ul><li lang="th"><a class="dropdown-item" href="https://www.worldbank.org/th/country/thailand">ภาษาไทย</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/timor-leste">Timor-Leste</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/togo">Togo</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/togo">English</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Tonga</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/caribbean">Trinité-et-Tobago</a>
+</li>
+<li><a class="dropdown-item" href="https://www.banquemondiale.org/fr/country/tunisia">Tunisie</a><ul><li lang="en"><a class="dropdown-item" href="https://www.worldbank.org/en/country/tunisia">English</a></li><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/tunisia">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/turkey">Turquie</a><ul><li lang="tr"><a class="dropdown-item" href="https://www.worldbank.org/tr/country/turkey">Türkçe</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/turkmenistan">Turkménistan</a><ul><li lang="ru"><a class="dropdown-item" href="https://www.vsemirnyjbank.org/ru/country/turkmenistan">Русский</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Tuvalu</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/ukraine">Ukraine</a><ul><li lang="uk"><a class="dropdown-item" href="https://www.worldbank.org/uk/country/ukraine">Українська</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/uruguay">Uruguay</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/uruguay">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/pacificislands">Vanuatu</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/venezuela">Venezuela</a><ul><li lang="es"><a class="dropdown-item" href="https://www.bancomundial.org/es/country/venezuela">Español</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/vietnam">Viet Nam</a><ul><li lang="vi"><a class="dropdown-item" href="https://www.worldbank.org/vi/country/vietnam">Tiẽng Việt</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/yemen">Yémen</a><ul><li lang="ar"><a class="dropdown-item" href="https://www.albankaldawli.org/ar/country/yemen">عربي</a></li></ul>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/zambia">Zambie</a>
+</li>
+<li><a class="dropdown-item" href="https://www.worldbank.org/en/country/zimbabwe">Zimbabwe</a>
+</li>
+</ul>
+</div>
+</ul>
+</li>
+</ul>
+<ul id="submenu_3" class="submenu" style="display: none;">
+<li class="" role="link">DONNÉES ET RECHERCHE&nbsp;<ul>
+<li class=""><a href="https://donnees.banquemondiale.org/">Données en libre
+accès<span></span></a>
+<ul>
+<li class=""><a href="https://donnees.banquemondiale.org/pays">Par pays<span></span></a>
+</li>
+<li class=""><a href="https://donnees.banquemondiale.org/indicateur">Par
+indicateur<span></span></a></li>
+</ul>
+</li>
+<li class="highlight-link"><a href="https://www.worldbank.org/en/research">Recherche et
+publications (a)<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">LES THÈMES DU DÉVELOPPEMENT&nbsp;<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/agriculture/overview">Agriculture<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/climatechange/overview">Changement
+climatique<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/digital/overview">Transformation
+numérique&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/education/overview">Éducation&nbsp;<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/energy/overview">Énergie<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/gender/overview">Genre et égalité
+des sexes<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/health/overview">Santé&nbsp;<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/poverty/overview">Pauvreté<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/topic/transport/overview">Transports<span></span></a>
+</li>
+<li class="highlight-link"><a href="https://www.banquemondiale.org/fr/topic">Tous les
+thèmes<span></span></a></li>
+</ul>
+</li>
+</ul>
+<ul id="submenu_4" class="submenu" style="display: none;">
+<li class="" role="link">À LA RECHERCHE D’UNE OPPORTUNITÉ PROFESSIONNELLE&nbsp;?<ul>
+<li class=""><a href="https://www.worldbank.org/en/about/careers">Offres d'emploi
+(a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/about/careers/programs-and-internships">Programmes et
+stages (a)<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">POUR LES PARTENAIRES<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/partners">À propos des
+partenaires<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/about/foundation-and-private-sector-partnerships">Fondations
+(a)<span></span></a></li>
+<li class=""><a href="https://ebizprd.worldbank.org/wfa/ccloginpage.html">Clients
+(a)<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/partners/the-world-bank-group-and-private-sector">Secteur
+privé<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/about/corporate-procurement">Passation des
+marchés institutionnels (a)<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/partners/civil-society">Société
+civile <span></span></a></li>
+<li class=""><a href="https://consultations.worldbank.org/en/consultations/home?map=1">Consultations
+(a)<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/who-we-are/parliamentarians">Parlementaires
+(a)<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">NOS OFFRES DE FORMATION<ul>
+<li class=""><a href="https://wbg.edcast.com/">Plateforme de cours en ligne (a)<span></span></a>
+</li>
+<li class=""><a href="https://academy.worldbank.org/en/home">Académie du Groupe de la Banque
+mondiale (a)&nbsp;<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">POUR LES INVESTISSEURS<ul>
+<li class=""><a href="https://treasury.worldbank.org/en/about/unit/treasury/ibrd">Produits
+obligataires et d’investissement de la Banque mondiale (a)<span></span></a></li>
+<li class=""><a href="https://treasury.worldbank.org/en/about/unit/treasury">Trésorerie
+(a)<span></span></a></li>
+<li class=""><a href="https://www.miga.org/">Garanties du Groupe de la Banque mondiale
+(a)<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">NOUS RENCONTRER<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/events/all">Évènements<span></span></a>
+</li>
+<li class=""><a href="https://live.banquemondiale.org/fr/home">Banque mondiale
+Live<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/speakers-bureau">Service des
+conférenciers&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.worldbank.org/en/meetings/splash">Assemblées annuelles et
+Réunions de printemps (a)<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/about/contacts">Nous
+contacter<span></span></a></li>
+</ul>
+</li>
+</ul>
+<ul id="submenu_5" class="submenu" style="display: none;">
+<li class="" role="link">ACTUALITÉS ET MISES À JOUR<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/all?lang_exact=French&amp;displayconttype_exact=Press%20Release">Communiqués
+de presse<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/all?lang_exact=French&amp;displayconttype_exact=Statement">Déclarations<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/all?lang_exact=French&amp;displayconttype_exact=Speeches%20and%20Transcripts">Discours
+et transcriptions<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/all?lang_exact=French&amp;displayconttype_exact=Opinion">Tribunes<span></span></a>
+</li>
+<li class="highlight-link"><a href="https://www.banquemondiale.org/fr/news/all">Toutes nos
+actualités<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">ÉVÈNEMENTS ET RESSOURCES<ul>
+<li class=""><a href="https://www.banquemondiale.org/fr/events/all">Évènements<span></span></a>
+</li>
+<li class=""><a href="https://live.banquemondiale.org/fr/home">Banque mondiale
+Live&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/all?lang_exact=French&amp;displayconttype_exact=Factsheet">Fiches
+d’information<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/results/all?lang_exact=French&amp;displayconttype_exact=Results">Fiches
+de résultats<span></span></a></li>
+</ul>
+</li>
+<li class="" role="link">ARTICLES ET MULTIMÉDIA&nbsp;<ul>
+<li class=""><a href="https://blogs.worldbank.org/fr/home">Billets de blog<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/all?lang_exact=French&amp;displayconttype_exact=Immersive%20Story">Articles<span></span></a>
+</li>
+<li class=""><a href="https://www.banquemondiale.org/fr/news/all?lang_exact=French&amp;displayconttype_exact=Immersive%20Story">Dossiers
+spéciaux&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/who-we-are/news/multimedia/all">Contenus
+multimédias&nbsp;<span></span></a></li>
+<li class=""><a href="https://www.banquemondiale.org/fr/who-we-are/news/multimedia/all?lang_exact=French&amp;multimedia_class_exact=Podcast">Podcasts<span></span></a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="section nav-tools" data-section-status="loaded" style="">
+<div class="default-content-wrapper">
+<span class="icon icon-search" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Perform a search query" tabindex="0" title="Search" style="cursor: pointer;"><img data-icon-name="search" src="https://www.worldbank.org/ext/icons/search.svg" alt="" loading="lazy"></span>
+<div class="search-container dropdown-menu">
+<div class="search-input-wrapper">
+<div class="search-input-container">
+<form name="hiddensearch" id="globalsearchId" method="get" style="display:none" aria-hidden="true">
+<input id="global_search" type="hidden" name="q" title="searchtexthidden">
+</form>
+<form role="search" class="input-group" name="search" onsubmit="return submit_search_form();" method="get">
+<input type="search" onfocus="clearField(this)" placeholder="dans l’ensemble du site…" class="search-input-field-1 global_search_form_desktop" id="search-input" name="qterm_test" autocomplete="off">
+<button type="submit" title="Search" onclick="javascript:submit_search_form();" class="search-icon"><span class="sr-only" aria-hidden="true">Search button</span>
+</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</header>
+<div class="lang-toggler language_toggler parbase"><div class="breadcrumb-section breadcrumb_13" 123style="">
+<div class="container">
+<div class="row">
+<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+<div class="page-title">
+<ol class="breadcrumb_redesign">
+<li><a class="l1-breadcrumb" href="/fr/who-we-are">Notre mission</a></li>
+<li class="hidden-sm hidden-xs"><a class="l1-breadcrumb" href="/fr/news">Actualités</a></li>
+</ol>
+</div>
+</div>
+<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+<div class="lang-switch-mobile hidden-lg hidden-md">
+<div class="page-langswitch " id="lang-click" style="cursor: pointer;">
+<ul>
+<li><span>Cette page en :</span>
+<span class="dropdown-toggle" aria-expanded="false">
+<span>
+FR</span>
+<span>
+<i class="icon icon-angle-down" style="cursor: pointer;"><span class="sr-only">dropdown</span></i>
+</span>
+</span>
+</li>
+</ul>
+</div>
+<div class="langswitch-dropdown float-right" id="lang-drop" style="display: none;">
+<ul class="dropdown-menu-right">
+<li><a href="https://www.worldbank.org/en/news/all">English</a></li>
+<li><a href="https://www.bancomundial.org/es/news/all">Español</a></li>
+<li><a href="https://www.albankaldawli.org/ar/news/all">العربية</a></li>
+<li><a href="https://www.vsemirnyjbank.org/ru/news/all">Русский</a></li>
+<li><a href="https://www.shihang.org/zh/news/all">中文</a></li>
+</ul>
+</div>
+</div>
+<div class="lang-switch-desktop hidden-sm hidden-xs ">
+<span class="page-in">Cette page en :<span class="space">_</span></span>
+<ul>
+<li class="in-else">Français</li>
+<li class="in-if"><a href="https://www.worldbank.org/en/news/all">English</a></li>
+<li class="in-if"><a href="https://www.bancomundial.org/es/news/all">Español</a></li>
+<li class="in-if"><a href="https://www.albankaldawli.org/ar/news/all">العربية</a></li>
+<li class="in-if"><a href="https://www.vsemirnyjbank.org/ru/news/all">Русский</a></li>
+<li class="in-if"><a href="https://www.shihang.org/zh/news/all">中文</a></li>
+</ul>
+<li class="dropdown-link hidden">
+<a id="dropdown-more-language" href="javascript:toggleMore('#more-language','#dropdown-more-language')"><span><i class="icon icon-angle-down" style="cursor: pointer;"><span class="sr-only">dropdown</span></i></span> </a>
+</li>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="clearix"></div>
+</div>
+<div class="par parsys"><div class="custom_search section">
+<div class="angular_search">
+<customsearch imagepath="/content/dam/wbr-redesign/logos/ajax.gif" i18nurl="/wbg/aem/service/i18nservice.html?" facettype="checkbox" pagetitle="Toute l'actualité" url="//search.worldbank.org/api/v2/news?format=json&amp;rows=20&amp;fct=displayconttype_exact,topic_exact,lang_exact,count_exact,admreg_exact&amp;src=cq55&amp;lang_exact=French&amp;apilang=fr" locale="{&quot;Albanian&quot;:&quot;sq&quot;,&quot;Arabic&quot;:&quot;ar&quot;,&quot;Armenian&quot;:&quot;hy&quot;,&quot;Bulgarian&quot;:&quot;bg&quot;,&quot;Cambodian&quot;:&quot;km&quot;,&quot;Catalan&quot;:&quot;ca&quot;,&quot;Chinese&quot;:&quot;zh&quot;,&quot;Croatian&quot;:&quot;hr&quot;,&quot;Dari&quot;:&quot;prs&quot;,&quot;English&quot;:&quot;en&quot;,&quot;French&quot;:&quot;fr&quot;,&quot;German&quot;:&quot;de&quot;,&quot;Hindi&quot;:&quot;hi&quot;,&quot;Indonesian&quot;:&quot;id&quot;,&quot;Japanese&quot;:&quot;ja&quot;,&quot;Khmer&quot;:&quot;km&quot;,&quot;Korean&quot;:&quot;ko&quot;,&quot;Kyrgyz&quot;:&quot;ky&quot;,&quot;Lao&quot;:&quot;lo&quot;,&quot;Laotian&quot;:&quot;lo&quot;,&quot;Macedonian&quot;:&quot;mk&quot;,&quot;Mongolian&quot;:&quot;mn&quot;,&quot;Pashto&quot;:&quot;ps&quot;,&quot;Polish&quot;:&quot;pl&quot;,&quot;Portuguese&quot;:&quot;pt&quot;,&quot;Romanian&quot;:&quot;ro&quot;,&quot;Russian&quot;:&quot;ru&quot;,&quot;Serbian&quot;:&quot;sr&quot;,&quot;Serbo-Croatian&quot;:&quot;sh&quot;,&quot;Sinhala&quot;:&quot;si&quot;,&quot;Spanish&quot;:&quot;es&quot;,&quot;Tajik&quot;:&quot;tg&quot;,&quot;Tamil&quot;:&quot;ta&quot;,&quot;Thai&quot;:&quot;th&quot;,&quot;Turkish&quot;:&quot;tr&quot;,&quot;Ukrainian&quot;:&quot;uk&quot;,&quot;Vietnamese&quot;:&quot;vi&quot;}" everythingurl="https://search.worldbank.org/api/v2/everything?fct=status_exact,displayconttype_exact,docty_exact,country_exact,lang_exact&amp;fl=url,cqpath,title,lang,wn_desc,master_recent_date,masterconttype&amp;format=json&amp;rows=20&amp;src=cq55&amp;masterregion_exact=East%20Asia%20and%20Pacific&amp;lang_exact=English&amp;apilang=en&amp;apilang=en&amp;" newsurl="https://search.worldbank.org/api/v2/news?format=json&amp;rows=20&amp;fct=displayconttype_exact,topic_exact,lang_exact,count_exact,countcode_exact,admreg_exact&amp;src=cq55&amp;apilang=en&amp;lang_exact=English" searchin="news" search-box-text="" liveevents="false" dateformat="MMMM D, YYYY" _nghost-c0="" class="ng-tns-c0-0" ng-version="4.4.7">
+<div _ngcontent-c0="" class="row full-row-dark-blue-components" style="padding: 84px 0px 32px 0px">
+<div _ngcontent-c0="" class="container">
+<div _ngcontent-c0="" class="redesign_title_meta">
+<div _ngcontent-c0="" class="row">
+<div _ngcontent-c0="" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+<h1 _ngcontent-c0="" class="ng-tns-c0-0">Toute l'actualité</h1>
+</div>
+</div>
+</div>
+</div>
+</div>
+<main _ngcontent-c0="" class="custom_search_section">
+<div _ngcontent-c0="" class="row full-row-white-components">
+<div _ngcontent-c0="" class="container">
+<div _ngcontent-c0="" class="row">
+<div _ngcontent-c0="" class="col-lg-3 col-md-3 col-xs-12 hidden-sm hidden-xs">
+<div _ngcontent-c0="" class="ng-tns-c0-0" id="wrapper">
+<button _ngcontent-c0="" class="sidebar-toggle">
+<i _ngcontent-c0="" class="sidebar-arrow fa fa-angle-left"></i>
+</button>
+<div _ngcontent-c0="" class="ng-tns-c0-0" id="sidebar-wrapper">
+<div _ngcontent-c0="" class="sidebar-heading">
+<i _ngcontent-c0="" class="fa fa-list-ul"></i>
+<h4 _ngcontent-c0="" class="h4">filtre</h4>
+<div _ngcontent-c0="" class="clear-all">
+<button _ngcontent-c0="" class="reset-btn" type="button">
+Clair Tout x
+</button>
+</div>
+</div>
+<timeframe _ngcontent-c0="" class="ng-tns-c0-0 ng-tns-c1-1"><ul class="sidebar-list" start="1">
+<li class="sidebar-list-item">
+<a class="sidebar-link" aria-expanded="false">Période</a>
+</li>
+<ul class="sidebar-sublist ng-trigger ng-trigger-timeframeFadeInOut" style="height: 0px; display: none;">
+<li class="ng-tns-c1-1">
+<a class="ng-tns-c1-1" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">Aujourd’hui&nbsp;</span><span class="list-item-num"></span>
+</a>
+</li><li class="ng-tns-c1-1">
+<a class="ng-tns-c1-1" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">7 jours précédents&nbsp;</span><span class="list-item-num"></span>
+</a>
+</li><li class="ng-tns-c1-1">
+<a class="ng-tns-c1-1" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">Mois précédent&nbsp;</span><span class="list-item-num"></span>
+</a>
+</li><li class="ng-tns-c1-1">
+<a class="ng-tns-c1-1" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">Année précédente&nbsp;</span><span class="list-item-num"></span>
+</a>
+</li>
+</ul>
+</ul></timeframe>
+<date _ngcontent-c0="" class="ng-tns-c0-0 ng-tns-c2-2"><ul class="sidebar-list" start="2">
+<li class="sidebar-list-item">
+<a class="sidebar-link" aria-expanded="false">Recherche par date</a>
+</li>
+<ul class="sidebar-sublist ng-trigger ng-trigger-dateFadeInOut" style="height: 0px; display: none;">
+<div class="_loop_primary_input">
+<label class="input_text">Du</label>
+<my-date-picker class="ng-tns-c2-2"><div class="mydp" style="width: 100%;">
+<div class="selectiongroup">
+<input autocomplete="off" autocorrect="off" class="selection ng-untouched ng-pristine ng-valid" ngtype="text" spellcheck="false" aria-label="Date input field" placeholder="mm/dd/yyyy" style="height: 34px; font-size: 14px;">
+<div class="selbtngroup" style="height: 34px;">
+<button class="btnpicker btnpickerenabled" type="button" aria-label="Open Calendar">
+<span class="mydpicon icon-mydpcalendar"></span>
+</button>
+</div>
+</div>
+</div>
+</my-date-picker>
+</div>
+<div class="_loop_primary_input">
+<label class="input_text">Au</label>
+<my-date-picker class="ng-tns-c2-2"><div class="mydp" style="width: 100%;">
+<div class="selectiongroup">
+<input autocomplete="off" autocorrect="off" class="selection ng-untouched ng-pristine ng-valid" ngtype="text" spellcheck="false" aria-label="Date input field" placeholder="mm/dd/yyyy" style="height: 34px; font-size: 14px;">
+<div class="selbtngroup" style="height: 34px;">
+<button class="btnpicker btnpickerenabled" type="button" aria-label="Open Calendar">
+<span class="mydpicon icon-mydpcalendar"></span>
+</button>
+</div>
+</div>
+</div>
+</my-date-picker>
+</div>
+<div class="submit-btn">
+<a class="ng-tns-c2-2" style="cursor: pointer"><i class="ng-tns-c2-2 fa fa-caret-right"></i></a>
+</div>
+</ul>
+</ul></date>
+<facets _ngcontent-c0="" class="ng-tns-c0-0 ng-tns-c3-3"><ul class="sidebar-list ng-tns-c3-3">
+<li class="sidebar-list-item">
+<a class="sidebar-link" aria-expanded="false">Type</a>
+</li>
+<ul class="sidebar-sublist ng-trigger ng-trigger-facetFadeInOut" id="collapse" style="height: 0px; display: none;">
+<div class="_loop_primary_search ng-tns-c3-3">
+<input class="ng-tns-c3-3 ng-untouched ng-pristine ng-valid" id="primary_inputs-1" type="search" placeholder="">
+</div>
+<li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Fiche</span>
+<span class="list-item-num">(109)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Fiche d’information</span>
+<span class="list-item-num">(23)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Article</span>
+<span class="list-item-num">(1711)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Dossier spécial</span>
+<span class="list-item-num">(52)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Infographie</span>
+<span class="list-item-num">(71)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Interactive</span>
+<span class="list-item-num">(3)</span>
+</div>
+</label>
+</div>
+</li>
+<li class="expand-link ng-tns-c3-3">
+<a class="ng-tns-c3-3">Voir plus +</a>
+</li>
+</ul>
+</ul><ul class="sidebar-list ng-tns-c3-3">
+<li class="sidebar-list-item">
+<a class="sidebar-link" aria-expanded="false">Thème</a>
+</li>
+<ul class="sidebar-sublist ng-trigger ng-trigger-facetFadeInOut" id="collapse" style="height: 0px; display: none;">
+<div class="_loop_primary_search ng-tns-c3-3">
+<input class="ng-tns-c3-3 ng-untouched ng-pristine ng-valid" id="primary_inputs-1" type="search" placeholder="">
+</div>
+<li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Agroindustrie</span>
+<span class="list-item-num">(42)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Agricultural Water Management</span>
+<span class="list-item-num">(46)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Agriculture And Food Security</span>
+<span class="list-item-num">(466)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Aid Dependence</span>
+<span class="list-item-num">(1)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Lutte contre la corruption</span>
+<span class="list-item-num">(23)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Marchés financiers</span>
+<span class="list-item-num">(26)</span>
+</div>
+</label>
+</div>
+</li>
+<li class="expand-link ng-tns-c3-3">
+<a class="ng-tns-c3-3">Voir plus +</a>
+</li>
+</ul>
+</ul><ul class="sidebar-list ng-tns-c3-3">
+<li class="sidebar-list-item">
+<a class="sidebar-link" aria-expanded="true">Langue</a>
+</li>
+<ul class="sidebar-sublist ng-trigger ng-trigger-facetFadeInOut" id="collapse" style="display: block;">
+<li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">français</span>
+<span class="list-item-num">(5834)</span>
+</div>
+</label>
+</div>
+</li>
+</ul>
+</ul><ul class="sidebar-list ng-tns-c3-3">
+<li class="sidebar-list-item">
+<a class="sidebar-link" aria-expanded="false">Pays</a>
+</li>
+<ul class="sidebar-sublist ng-trigger ng-trigger-facetFadeInOut" id="collapse" style="height: 0px; display: none;">
+<div class="_loop_primary_search ng-tns-c3-3">
+<input class="ng-tns-c3-3 ng-untouched ng-pristine ng-valid" id="primary_inputs-1" type="search" placeholder="">
+</div>
+<li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Afghanistan</span>
+<span class="list-item-num">(143)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Albanie</span>
+<span class="list-item-num">(104)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Algérie</span>
+<span class="list-item-num">(304)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Samoa américaines</span>
+<span class="list-item-num">(89)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Andorre</span>
+<span class="list-item-num">(89)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Angola</span>
+<span class="list-item-num">(135)</span>
+</div>
+</label>
+</div>
+</li>
+<li class="expand-link ng-tns-c3-3">
+<a class="ng-tns-c3-3">Voir plus +</a>
+</li>
+</ul>
+</ul><ul class="sidebar-list ng-tns-c3-3">
+<li class="sidebar-list-item">
+<a class="sidebar-link" aria-expanded="false">Région</a>
+</li>
+<ul class="sidebar-sublist ng-trigger ng-trigger-facetFadeInOut" id="collapse" style="height: 0px; display: none;">
+<div class="_loop_primary_search ng-tns-c3-3">
+<input class="ng-tns-c3-3 ng-untouched ng-pristine ng-valid" id="primary_inputs-1" type="search" placeholder="">
+</div>
+<li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Afrique</span>
+<span class="list-item-num">(2706)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Donor Countries</span>
+<span class="list-item-num">(9)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Asie de l’Est et Pacifique</span>
+<span class="list-item-num">(432)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Europe et Asie centrale</span>
+<span class="list-item-num">(350)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Amérique latine et Caraïbes</span>
+<span class="list-item-num">(549)</span>
+</div>
+</label>
+</div>
+</li><li class="ng-tns-c3-3">
+<div class="_loop_checkbox ng-tns-c3-3">
+<input class="_loop_primary_checkbox" type="checkbox">
+<label class="ng-tns-c3-3" for="srchwtn">
+<div class="sidebar-sublist_wrapper">
+<span class="sidebar-sublist-item">Moyen-Orient et Afrique du Nord</span>
+<span class="list-item-num">(1209)</span>
+</div>
+</label>
+</div>
+</li>
+<li class="expand-link ng-tns-c3-3">
+<a class="ng-tns-c3-3">Voir plus +</a>
+</li>
+</ul>
+</ul>
+</facets>
+</div>
+</div>
+</div>
+<div _ngcontent-c0="" class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+<search _ngcontent-c0="" class="ng-tns-c0-0"><div class="row">
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+<div class="listing_search">
+<div class="header-search-section">
+<form class="input-group has-feedback ng-untouched ng-pristine ng-valid" novalidate="">
+<input class="search-input-field-1 ng-untouched ng-pristine ng-valid" label="search" title="search" type="text" placeholder="">
+<i class="fa fa-search search-submit-icon search-comp"></i>
+</form>
+</div>
+</div>
+</div>
+</div></search>
+<div _ngcontent-c0="" class="row">
+<div _ngcontent-c0="" class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+<label _ngcontent-c0="" class="m-result-lbl ng-tns-c0-0">Affiche 1 - 20 sur 5,834 résultats
+</label>
+</div>
+<div _ngcontent-c0="" class="col-lg-6 col-md-6 col-sm-6 col-xs-8">
+<div _ngcontent-c0="" class="sidebar-nav-mobile hidden-lg hidden-md">
+<div _ngcontent-c0="" class="sidebar-heading">
+<span _ngcontent-c0="" class="dropdown-toggle">
+<h4 _ngcontent-c0="" class="h4">
+FILTRER PAR
+<i _ngcontent-c0="" class="fa fa-angle-down arrow-down"></i>
+</h4>
+</span>
+</div>
+</div>
+</div>
+<mobilefacets _ngcontent-c0="" class="ng-tns-c0-0 ng-tns-c4-4"><div class="col-xs-12 hidden-lg hidden-md">
+<div class="refine-select-button-list">
+</div>
+<div class="sidebar-collapse ng-trigger ng-trigger-refineFadeInOut" id="refine-collapse1" style="height: 0px; display: none; opacity: 0;">
+<div class="sidebar-slider">
+<ul class="padd-16 col-xs-6 col-sm-6">
+<li class="sidebar-list-item">
+<a class="sidebar-menu-trigger">Recherche par date</a>
+</li>
+<li class="sidebar-list-item ng-tns-c4-4">
+<a class="sidebar-menu-trigger">Type</a>
+</li><li class="sidebar-list-item ng-tns-c4-4">
+<a class="sidebar-menu-trigger">Thème</a>
+</li><li class="sidebar-list-item ng-tns-c4-4">
+<a class="sidebar-menu-trigger">Langue</a>
+</li><li class="sidebar-list-item ng-tns-c4-4">
+<a class="sidebar-menu-trigger">Pays</a>
+</li><li class="sidebar-list-item ng-tns-c4-4">
+<a class="sidebar-menu-trigger">Région</a>
+</li>
+</ul>
+<ul class="padd-16 col-xs-6 col-sm-6">
+<li class="sidebar-list collapse">
+<ul class="ng-tns-c4-4">
+<li class="ng-tns-c4-4"><a class="sidebar-menu-trigger-back"><b class="ng-tns-c4-4">Arrière</b></a></li>
+<li class="ng-tns-c4-4">
+<a class="ng-tns-c4-4" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">Aujourd’hui&nbsp;</span>
+<span class="list-item-num"></span>
+</a>
+</li><li class="ng-tns-c4-4">
+<a class="ng-tns-c4-4" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">7 jours précédents&nbsp;</span>
+<span class="list-item-num"></span>
+</a>
+</li><li class="ng-tns-c4-4">
+<a class="ng-tns-c4-4" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">Mois précédent&nbsp;</span>
+<span class="list-item-num"></span>
+</a>
+</li><li class="ng-tns-c4-4">
+<a class="ng-tns-c4-4" data-customlink="sf:body content">
+<span class="sidebar-sublist-item">Année précédente&nbsp;</span>
+<span class="list-item-num"></span>
+</a>
+</li>
+<li class="ng-tns-c4-4">
+<div class="clear"></div>
+<table class="m-spec-date">
+<tbody class="ng-tns-c4-4">
+<tr class="ng-tns-c4-4">
+<td class="ng-tns-c4-4">
+<div class="_loop_primary_input start_date">
+<label class="input_text">Du</label>
+<my-date-picker class="ng-tns-c4-4"><div class="mydp" style="width: 100%;">
+<div class="selectiongroup">
+<input autocomplete="off" autocorrect="off" class="selection ng-untouched ng-pristine ng-valid" ngtype="text" spellcheck="false" aria-label="Date input field" placeholder="mm/dd/yyyy" style="height: 34px; font-size: 14px;">
+<div class="selbtngroup" style="height: 34px;">
+<button class="btnpicker btnpickerenabled" type="button" aria-label="Open Calendar">
+<span class="mydpicon icon-mydpcalendar"></span>
+</button>
+</div>
+</div>
+</div>
+</my-date-picker>
+</div>
+</td>
+<td class="ng-tns-c4-4">
+<div class="_loop_primary_input end_date">
+<label class="input_text">Au</label>
+<my-date-picker class="ng-tns-c4-4"><div class="mydp" style="width: 100%;">
+<div class="selectiongroup">
+<input autocomplete="off" autocorrect="off" class="selection ng-untouched ng-pristine ng-valid" ngtype="text" spellcheck="false" aria-label="Date input field" placeholder="mm/dd/yyyy" style="height: 34px; font-size: 14px;">
+<div class="selbtngroup" style="height: 34px;">
+<button class="btnpicker btnpickerenabled" type="button" aria-label="Open Calendar">
+<span class="mydpicon icon-mydpcalendar"></span>
+</button>
+</div>
+</div>
+</div>
+</my-date-picker>
+</div>
+</td>
+<td class="ng-tns-c4-4">
+<div class="submit-btn">
+<a class="ng-tns-c4-4"><i class="ng-tns-c4-4 fa fa-caret-right"></i></a>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</li>
+<li class="sidebar-list collapse">
+</li>
+</ul>
+</div>
+</div>
+</div></mobilefacets>
+</div>
+<hr _ngcontent-c0="" class="ng-tns-c0-0">
+<news _ngcontent-c0="" class="ng-tns-c0-0">
+<div class="row">
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+<div class="">
+<div class="f05v6-sorting clearfix">
+<div class="f05v6-sorting-label">Trier par: </div>
+<ul>
+<li>
+<a data-customlink="ss:body content" class="event-disable-click">Date</a>
+</li>
+</ul>
+</div>
+<div class="row">
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+<div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/feature/2025/03/20/it-is-time-to-look-back-lessons-and-achievements-from-the-forest-investment-program-in-afe-drc" class="">De la vision à l’action : Leçons et réalisations du Programme d'Investissement pour la Forêt en République démocratique du Congo (RDC)</a></h4>
+<p class="blurb-text">
+<span>Depuis plus d'une décennie, les vastes étendues de terre autour de certaines grandes villes de la République démocratique du Congo (RDC) - Kinshasa, Kisangani, Mbuji-Mayi et Kananga - sont au centre du...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>20 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Article</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/press-release/2025/03/19/world-bank-enhances-commitment-to-human-capital-development-in-morocco" class="">Maroc : la Banque mondiale renforce son engagement en faveur du développement du capital humain</a></h4>
+<p class="blurb-text">
+<span>Rabat, 19 mars 2025 —&nbsp;Le Conseil d’Administration de la Banque mondiale a approuvé un financement de 600 millions de dollars pour la troisième phase du programme de renforcement du capital humain...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>19 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Communiqués de presse</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/feature/2025/03/18/afw-flood-victims-in-mali-regain-hope" class="">Inondations au Mali : les sinistrés retrouvent l’espoir</a></h4>
+<p class="blurb-text">
+<span>Le Mali a connu de très importantes inondations entre juillet et août 2024 qui ont endommagé sur leur passage des centres de santé, des écoles ainsi qu’une trentaine de routes, de ponts et de dalots. Pour...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>18 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Article</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/press-release/2025/03/18/world-bank-group-hosts-second-annual-global-digital-summit-to-bridge-the-digital-divide-and-boost-economic-growth" class="">Le Groupe de la Banque mondiale organise son deuxième Sommet mondial du numérique pour résorber la fracture digitale tout en stimulant la croissance économique</a></h4>
+<p class="blurb-text">
+<span>Washington, 18 mars 2025 — Le Groupe de la Banque mondiale a lancé aujourd’hui la deuxième édition de son Sommet mondial du numérique. Cette manifestation qui rassemble dirigeants des secteurs public et...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>18 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Communiqués de presse</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/country/togo/publication/togo-public-finance-review-in-agriculture-and-rural-connectivity-2024" class="">Togo - Revue des Finances Publiques des secteurs de l'agriculture et de la connectivité rurale au Togo : mobiliser les investissements nécessaires pour la transformation de l'économie rurale</a></h4>
+<p class="blurb-text">
+<span>La revue des finances publiques des secteurs de l’agriculture et de la connectivité rurale au Togo examine le rôle de la gestion des investissements publics dans&nbsp;l’accélération du développement rural...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>17 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Publication</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/country/togo/publication/togo-2024-economic-update-building-resilience" class="">Perspectives économiques du Togo : renforcer la résilience</a></h4>
+<p class="blurb-text">
+<span>Le rapport sur les Perspectives économiques du Togo publié en septembre 2024, présente l’évolution récente et les perspectives de croissance et de réduction de la pauvreté, ainsi que les principaux risques...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>17 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Publication</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/press-release/2025/03/17/world-bank-group-supports-cameroon-economic-resilience-domestic-revenue-mobilization-and-transparency-public-finances" class="">Le Groupe de la Banque mondiale soutient la résilience économique du Cameroun, la mobilisation des recettes intérieures et la transparence des finances publiques</a></h4>
+<p class="blurb-text">
+<span>WASHINGTON DC, 14 mars 2025 - Le Groupe de la Banque mondiale a approuvé aujourd'hui deux opérations pour le Cameroun pour un montant total de 400 millions de dollars. Les deux opérations se complètent...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>17 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Communiqués de presse</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/press-release/2025/03/14/new-project-to-strengthen-communities-and-support-vulnerable-groups-in-djibouti" class="">Djibouti : un nouveau projet pour renforcer les communautés et soutenir les populations vulnérables</a></h4>
+<p class="blurb-text">
+<span>WASHINGTON, 14 mars 2025 — La Banque mondiale a approuvé aujourd'hui un projet de 31 millions de dollars visant à renforcer les bases socioéconomiques des régions mal desservies de Djibouti en améliorant...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>14 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Communiqués de presse</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/feature/2025/03/13/afw-revitalizing-farmland-in-mauritania-a-community-driven-initiative" class="">Revitaliser les terres agricoles en Mauritanie : une initiative impulsée par les communautés</a></h4>
+<p class="blurb-text">
+<span>Le village de Djeibaba, dans la commune d'Edebay Ehl Guelay au sud de la Mauritanie, est tributaire d'un barrage construit en 1995 pour irriguer 500 hectares de terres agricoles. Ce barrage fournit l'eau...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>13 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Article</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/executive-directors/eds13/brief/renforcement-du-partenariat-pour-le-developpement-durable-reflexions-a-partir-de-mauritanie" class="">Renforcement du partenariat pour le developpement durable : reflexions a partir de Mauritanie</a></h4>
+<p class="blurb-text">
+<span>Points forts de la visite de l’Administrateur en Mauritanie&nbsp;:Audience auprès du Premier Ministre, S.E.M. EL Moctar OULD DJAYAudience auprès du Ministre de l’Economie et des Finances, Gouverneur du...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>13 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Fiche</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/executive-directors/eds13/brief/etape-historique-reconstitution-des-ressources-ida21-pour-100-milliards-de-dollars-pour-le-developpement-mondial" class="">Etape historique : Reconstitution des ressources IDA21 pour 100 milliards de dollars pour le developpement mondial</a></h4>
+<p class="blurb-text">
+<span>BODY CONTENT Points forts de la réunion de reconstitution des ressources de l’IDA21 à Séoul&nbsp;:Le Groupe de la Banque mondiale a obtenu 23,7 milliards de dollars de contributions des donateurs, qui...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>13 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Fiche</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/feature/2025/03/13/surviving-cyclone-chido-in-comoros-a-story-of-hope-and-resilience-afe" class="">Les Comores après le cyclone Chido : une histoire d'espoir et de résilience</a></h4>
+<p class="blurb-text">
+<span>« De nombreuses maisons ont été gravement endommagées, certaines ont même complètement disparu, ne laissant que de la terre nue. » Ces mots d'Ali Athoumane, chef du village de Dzuani aux Comores, résonnent...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>13 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Article</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/feature/2025/03/12/afw-guinea-kadiatou-journey-from-forced-marriage-to-education" class="">Guinée : le parcours de Kadiatou, du mariage forcé à l’éducation</a></h4>
+<p class="blurb-text">
+<span>Le soleil se lève lentement sur Dogomet, une localité située à 473 km de Conakry, et les rires des enfants résonnent dans les rues poussiéreuses, tandis que les femmes s’activent aux tâches domestiques...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>12 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Article</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/region/lac/brief/vincula-lac" class="">Vincula LAC : Compétences numériques pour l'avenir</a></h4>
+<p class="blurb-text">
+<span>Promouvoir le développement des talents et des compétences numériques en Amérique latine et dans les Caraïbes &nbsp;1- Qu'est-ce que Vincula LAC ? Vincula LAC est un programme initié par la Banque mondiale...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>10 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Fiche</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/executive-directors/eds13/brief/du-g20-a-la-cop30-participation-de-l-administrateur-harold" class="">Du G20 a la COP30: Participation de l'Administrateur Harold</a></h4>
+<p class="blurb-text">
+<span>BODY CONTENT Points forts de la visite de l’Administrateur au Brésil&nbsp;:Participation à l’événement sur le thème «&nbsp;Le leadership du Brésil dans la transition mondiale vers une économie à faibles...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>07 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Fiche</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/executive-directors/eds13/brief/visite-de-l-administrateur-harold-tavares-a-djibouti" class="">Visite de l'Administrateur Harold Tavares a Djibouti</a></h4>
+<p class="blurb-text">
+<span>Points forts de la visite de l’Administrateur à Djibouti L’Administrateur a effectué une visite officielle à Djibouti pour la deuxième fois, du 20 au 23 janvier 2025, où il a discuté des priorités du pays...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>07 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Fiche</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/executive-directors/eds13/brief/djibouti-banque-mondiale-explorer-les-priorites-economiques-de-djibouti" class="">Djibouti – Banque Mondiale : Explorer les Priorites Economiques de Djibouti</a></h4>
+<p class="blurb-text">
+<span>Points forts de la visite de l’Administrateur à Djibouti&nbsp;:Audience auprès du Ministre des Finances et Gouverneur du GBM, M. Ilyas Moussa Dawaleh.Participation à la retraite de IFC.Participation au...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>07 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Fiche</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/immersive-story/2025/03/07/the-power-of-opportunity-why-universal-infrastructure-access-matters" class="">L'inégalité invisible, pourquoi l'accès universel aux infrastructures donne des ailes aux femmes</a></h4>
+<p class="blurb-text">
+<span>Remédier aux disparités de genre en matière d’infrastructures est un moyen d’améliorer la vie des femmes et des enfants, de stimuler la productivité des entreprises et de favoriser le développement durable.&nbsp;</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>06 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Dossier spécial</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/news/press-release/2025/03/04/world-bank-announces-new-strategy-for-haiti" class="">La Banque mondiale annonce une nouvelle stratégie pour Haïti</a></h4>
+<p class="blurb-text">
+<span>Washington, D.C., 4 mars 2025&nbsp;-&nbsp;Le Conseil d’administration du Groupe de la Banque mondiale a approuvé ce mardi un nouveau cadre de partenariat stratégique pour Haïti. S’étendant sur la période...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>04 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Communiqués de presse</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div><div class="search-listing">
+<ul>
+<li>
+<div class="search-listing-content">
+<h4><a data-customlink="sr:body content" data-searchresult="y" href="http://www.banquemondiale.org/fr/results/2025/03/04/afw-from-fields-to-markets-the-role-of-digital-platforms-in-west-africa-agricultural-success" class="">Du champ au marché : le rôle des plateformes numériques dans le succès de l’agriculture ouest-africaine</a></h4>
+<p class="blurb-text">
+<span>Zoom sur les résultatsLe projet pour l’e-agriculture en Côte d'Ivoire a amélioré l'accès au marché et à l'information avec la création d'une plateforme commerciale numérique. Entre 2018 et 2023, il a bénéficié...</span>
+</p>
+<div class="search-listing-info">
+<span class="info-list-item">
+<span class="info-list-title">Date:</span>
+<span>04 mars 2025</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Type:</span>
+<span>Fiches de résultats</span>
+</span>
+<span class="info-list-item">
+<span class="info-list-title">Langue:</span>
+français
+</span>
+</div>
+</div>
+</li>
+</ul>
+<hr>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</news>
+<div _ngcontent-c0="" class="row">
+<div _ngcontent-c0="" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 ng-tns-c0-0">
+<ul _ngcontent-c0="" class="pagination ng-tns-c0-0" style="cursor: pointer">
+<li _ngcontent-c0="" class="ng-tns-c0-0 disabled">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer"><i _ngcontent-c0="" class="fa fa-angle-left" aria-hidden="true"></i><i _ngcontent-c0="" class="fa fa-angle-left" aria-hidden="true"></i></a>
+</li>
+<li _ngcontent-c0="" class="ng-tns-c0-0 disabled">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer"><i _ngcontent-c0="" class="fa fa-angle-left" aria-hidden="true"></i></a>
+</li>
+<li _ngcontent-c0="" class="ng-tns-c0-0 active">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">1</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">2</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">3</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">4</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">5</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">6</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">7</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">8</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">9</a>
+</li><li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer">10</a>
+</li>
+<li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer"><i _ngcontent-c0="" class="fa fa-angle-right" aria-hidden="true"></i></a>
+</li>
+<li _ngcontent-c0="" class="ng-tns-c0-0">
+<a _ngcontent-c0="" class="ng-tns-c0-0" data-customlink="sp:footer"><i _ngcontent-c0="" class="fa fa-angle-right" aria-hidden="true"></i><i _ngcontent-c0="" class="fa fa-angle-right" aria-hidden="true"></i></a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</customsearch>
+<link rel="stylesheet" href="/etc/designs/wbrrdesign/custom_search_clientlibs.css" type="text/css">
+</div>
+</div>
+</div>
+<footer class="footer-wrapper">
+<div class="footer container" data-block-name="footer" data-block-status="loaded">
+<section class="default-content-wrapper section bg-primary-blue-90">
+<div class="ft-social">
+<div class="ft-social-list">
+<ul>
+<li><a href="/ext/fr" title="World Bank">
+<picture>
+<source type="image/webp" srcset="https://www.banquemondiale.org/ext/fr/media_1eb8704dcdb34e0ce19d092cd1baf8f6b6bc31b25.png?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+<source type="image/webp" srcset="https://www.banquemondiale.org/ext/fr/media_1eb8704dcdb34e0ce19d092cd1baf8f6b6bc31b25.png?width=750&amp;format=webply&amp;optimize=medium">
+<source type="image/png" srcset="https://www.banquemondiale.org/ext/fr/media_1eb8704dcdb34e0ce19d092cd1baf8f6b6bc31b25.png?width=2000&amp;format=png&amp;optimize=medium" media="(min-width: 600px)">
+<img loading="lazy" alt="World Bank" src="https://www.banquemondiale.org/ext/fr/media_1eb8704dcdb34e0ce19d092cd1baf8f6b6bc31b25.png?width=750&amp;format=png&amp;optimize=medium" width="372" height="48">
+</picture>
+</a></li>
+</ul>
+</div>
+<div class="ft-social-list">
+<ul>
+<li><a href="https://www.banquemondiale.org/fr/who-we-are/ibrd" title="BIRD">BIRD</a></li>
+<li><a href="https://ida.banquemondiale.org/" title=" IDA"> IDA</a></li>
+<li><a href="https://www.ifc.org/fr/home" title="IFC">IFC</a></li>
+<li><a href="https://www.miga.org/" title="MIGA">MIGA</a></li>
+<li><a href=" https://icsid.worldbank.org/fr" title="CIRDI">CIRDI</a>
+</li>
+</ul>
+</div>
+<div class="ft-social-list">
+<ul>
+<li><a href="https://www.facebook.com/Banquemondiale/" title="" data-customlink="sm:footer" aria-label="facebook icon" data-text="facebook"><span class="icon icon-facebook"><svg width="10" height="20" viewBox="0 0 10 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M8.09489 3.21362H9.875V0.173047C9.56847 0.131958 8.51222 0.0385742 7.28239 0.0385742C4.71563 0.0385742 2.95767 1.62236 2.95767 4.5322V7.21045H0.125V10.6096H2.95767V19.1636H6.42926V10.6096H9.14744L9.57955 7.21045H6.42926V4.86838C6.42926 3.88599 6.69886 3.21362 8.09489 3.21362Z" fill="white"></path>
+</svg>
+</span></a></li>
+<li><a href="https://www.whatsapp.com/channel/0029VaeLyAgAojYvg7Wbr91k" title="" data-customlink="sm:footer" aria-label="whatsapp icon" data-text="whatsapp"><span class="icon icon-whatsapp"><svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_1971_10345)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10.1024 0.788574C4.72238 0.788574 0.360521 5.15043 0.360521 10.5315C0.360521 12.372 0.871258 14.0933 1.7581 15.5621L0 20.7886L5.39335 19.0616C6.78869 19.8327 8.39435 20.2734 10.1024 20.2734C15.4835 20.2734 19.8453 15.9115 19.8453 10.5304C19.8453 5.14932 15.4835 0.788574 10.1024 0.788574ZM10.1024 18.641C8.45555 18.641 6.92111 18.147 5.64037 17.3002L2.52365 18.2983L3.53622 15.2862C2.56482 13.9487 1.99177 12.3063 1.99177 10.5304C1.99288 6.05841 5.63036 2.41982 10.1024 2.41982C14.5744 2.41982 18.213 6.05841 18.213 10.5304C18.213 15.0024 14.5744 18.641 10.1024 18.641ZM14.6701 12.7447C14.4253 12.6112 13.2258 11.9636 13.001 11.8724C12.7762 11.7811 12.6115 11.7333 12.4369 11.9758C12.2622 12.2184 11.7637 12.7603 11.6134 12.9205C11.4621 13.0808 11.3163 13.0964 11.0715 12.9617C10.8279 12.8282 10.0367 12.5355 9.11761 11.6532C8.40325 10.9666 7.93479 10.1332 7.79904 9.87948C7.66329 9.62467 7.79904 9.49559 7.92701 9.37653C8.04273 9.2686 8.18627 9.09502 8.31646 8.95481C8.44553 8.81461 8.49115 8.71224 8.58017 8.54978C8.66919 8.38733 8.63358 8.24045 8.57572 8.1136C8.51786 7.98675 8.0661 6.74496 7.87805 6.23867C7.69 5.73349 7.47969 5.80805 7.33393 5.80248C7.18927 5.79803 7.02348 5.77021 6.85768 5.76465C6.69189 5.75797 6.42038 5.81027 6.18338 6.05062C5.94637 6.29097 5.28096 6.86847 5.23534 8.09246C5.18972 9.31534 6.0365 10.5315 6.15445 10.7018C6.27239 10.872 7.77123 13.5247 10.2615 14.6152C12.7529 15.7057 12.7651 15.373 13.2224 15.3485C13.6798 15.324 14.7157 14.8021 14.9449 14.2291C15.1741 13.656 15.1919 13.1587 15.1341 13.053C15.0762 12.9472 14.9127 12.8783 14.669 12.7447H14.6701Z" fill="white"></path>
+</g>
+<defs>
+<clipPath id="clip0_1971_10345">
+<rect width="19.8453" height="20" fill="white" transform="translate(0 0.788574)">
+</rect>
+</clipPath>
+</defs>
+</svg>
+</span></a></li>
+<li><a href="https://x.com/banquemondiale" title="" data-customlink="sm:footer" aria-label="twitter icon" data-text="twitter"><span class="icon icon-twitter"><svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_1971_10349)">
+<path d="M8.73532 7.14009L14.1989 0.788574H12.9036L8.15925 6.3035L4.37011 0.788574H0L5.73019 9.12762L0 15.7886H1.29525L6.30504 9.96421L10.307 15.7886H14.6771L8.7341 7.14009H8.73532ZM6.96184 9.201L6.38087 8.37052L1.76125 1.76338H3.75L7.47798 7.09606L8.05895 7.92654L12.9048 14.8578H10.9161L6.96184 9.20222V9.201Z" fill="white"></path>
+</g>
+<defs>
+<clipPath id="clip0_1971_10349">
+<rect width="14.6771" height="15" fill="white" transform="translate(0 0.788574)">
+</rect>
+</clipPath>
+</defs>
+</svg>
+</span></a></li>
+<li><a href="https://www.linkedin.com/company/the-world-bank/" title="" data-customlink="sm:footer" aria-label="linkedin icon" data-text="linkedin"><span class="icon icon-linkedin"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.1482 15.7853H12.0114V10.915C12.0114 9.75487 11.9918 8.25779 10.3809 8.25779C8.77004 8.25779 8.49557 9.5248 8.49557 10.8307V15.7853H5.35874V5.76913H8.3714V7.1366H8.41388C9.02817 6.09642 10.1685 5.47425 11.3841 5.51962C14.5634 5.51962 15.1482 7.5935 15.1482 10.2928V15.7886V15.7853ZM1.82001 4.39843C0.816881 4.39843 0 3.59156 0 2.5935C0 1.59544 0.813614 0.788574 1.82001 0.788574C2.82641 0.788574 3.64002 1.59544 3.64002 2.5935C3.64002 3.59156 2.82641 4.39843 1.82001 4.39843ZM3.38842 15.7853H0.248332V5.76913H3.38842V15.7886V15.7853Z" fill="white"></path>
+</svg>
+</span></a></li>
+<li><a href="https://www.instagram.com/banquemondiale/" title="" data-customlink="sm:footer" aria-label="instagram icon" data-text="instagram"><span class="icon icon-instagram"><svg width="17" height="19" viewBox="0 0 17 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M12.0096 0.788574H4.99045C2.23886 0.788574 0 3.00504 0 5.72912V13.1441C0 15.8685 2.23886 18.0846 4.99045 18.0846H12.0096C14.7615 18.0846 17 15.8682 17 13.1441V5.72912C17.0004 3.00504 14.7615 0.788574 12.0096 0.788574ZM15.7205 13.1441C15.7205 15.1698 14.0557 16.818 12.0096 16.818H4.99045C2.94427 16.818 1.27945 15.1698 1.27945 13.1441V5.72912C1.27945 3.7034 2.94427 2.05523 4.99045 2.05523H12.0096C14.0557 2.05523 15.7205 3.7034 15.7205 5.72912V13.1441ZM8.52284 4.81783C7.31419 4.78278 6.16319 5.23077 5.28151 6.07834C4.37721 6.94795 3.85864 8.16331 3.85864 9.41262C3.85864 11.9463 5.94095 14.0078 8.50021 14.0078C9.73588 14.0078 10.8964 13.5291 11.7671 12.6595C12.6265 11.8014 13.1144 10.6544 13.1414 9.4296C13.1695 8.14994 12.7721 7.03755 11.9912 6.21238C11.1675 5.34169 9.96797 4.85938 8.52284 4.81783ZM11.5777 9.39564C11.5397 11.1135 10.188 12.4593 8.49985 12.4593C6.81167 12.4593 5.42238 11.0926 5.42238 9.41262C5.42238 8.57914 5.76797 7.76879 6.3712 7.18929C6.92626 6.65567 7.64153 6.36448 8.39293 6.36448C8.42102 6.36448 8.44912 6.36484 8.47722 6.36556C9.49684 6.39483 10.3172 6.70806 10.8496 7.27094C11.3449 7.79444 11.5967 8.52929 11.5777 9.39564ZM14.3362 4.68778C14.3362 5.27958 13.8516 5.75934 13.2538 5.75934C12.656 5.75934 12.1714 5.27958 12.1714 4.68778C12.1714 4.09597 12.656 3.61621 13.2538 3.61621C13.8516 3.61621 14.3362 4.09597 14.3362 4.68778Z" fill="white"></path>
+</svg>
+</span></a></li>
+<li><a href="https://www.youtube.com/playlist?list=PL2365BDB4784D3035" title="" data-customlink="sm:footer" aria-label="youtube icon" data-text="youtube"><span class="icon icon-youtube"><svg width="19" height="14" viewBox="0 0 19 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18.6044 2.8445C18.3858 2.03645 17.7403 1.39717 16.923 1.18237C15.4395 0.788574 9.5 0.788574 9.5 0.788574C9.5 0.788574 3.56055 0.788574 2.07699 1.18237C1.25973 1.39717 0.614247 2.03645 0.395616 2.8445C0 4.30718 0 7.3655 0 7.3655C0 7.3655 0 10.4238 0.395616 11.8865C0.614247 12.6945 1.25973 13.3338 2.07699 13.5486C3.56055 13.9424 9.5 13.9424 9.5 13.9424C9.5 13.9424 15.4395 13.9424 16.923 13.5486C17.7403 13.3338 18.3858 12.6945 18.6044 11.8865C19 10.4238 19 7.3655 19 7.3655C19 7.3655 19 4.30718 18.6044 2.8445ZM7.55836 10.1425V4.58846L12.5244 7.3655L7.55836 10.1425Z" fill="white"></path>
+</svg>
+</span></a></li>
+<li><a href="https://www.flickr.com/photos/worldbank/" title="" data-customlink="sm:footer" aria-label="flickr icon" data-text="flickr"><span class="icon icon-flickr"><svg width="20" height="10" viewBox="0 0 20 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M4.42829 0.788574C1.98252 0.788574 0 2.7711 0 5.21687C0 7.66264 1.98252 9.64516 4.42829 9.64516C6.87406 9.64516 8.85659 7.66264 8.85659 5.21687C8.85659 2.7711 6.87406 0.788574 4.42829 0.788574ZM15.5711 0.788574C13.1254 0.788574 11.1428 2.7711 11.1428 5.21687C11.1428 7.66264 13.1254 9.64516 15.5711 9.64516C18.0169 9.64516 19.9994 7.66264 19.9994 5.21687C19.9994 2.7711 18.0169 0.788574 15.5711 0.788574Z" fill="white"></path>
+</svg>
+</span></a></li>
+</ul>
+</div>
+</div>
+<div class="ft-main">
+<div class="ft-main-item">
+<ul>
+<li><a href="https://www.banquemondiale.org/ext/fr/who-we-are" title="À propos">À propos</a></li>
+<li><a href="https://www.banquemondiale.org/fr/news" title="Actualité">Actualité</a></li>
+<li><a href="https://www.worldbank.org/en/about/careers" title="Offres d'emploi (a)">Offres d'emploi (a)</a></li>
+<li><a href="https://www.banquemondiale.org/fr/about/contacts" title="Contacts">Contacts</a></li>
+</ul>
+</div>
+<div class="ft-main-item">
+<ul>
+<li><a href="https://www.banquemondiale.org/fr/where-we-work" title="Pays">Pays</a></li>
+<li><a href="https://www.banquemondiale.org/fr/topic" title=" Thèmes">
+Thèmes</a></li>
+<li><a href="https://projects.banquemondiale.org/fr/projects-operations/projects-home" title="Projets et opérations">Projets et opérations</a>
+</li>
+<li><a href="https://www.worldbank.org/en/research" title=" Recherche et publications (a)"> Recherche et
+publications (a)</a></li>
+</ul>
+</div>
+<div class="ft-main-item">
+<ul>
+<li><a href="https://www.worldbank.org/en/events" title="Évènements">Évènements</a></li>
+<li><a href="https://donnees.banquemondiale.org/" title="Données">Données</a></li>
+<li><a href="https://academy.worldbank.org/en/home" title="Académie des connaissances (a)">Académie des
+connaissances (a)</a></li>
+<li><a href="https://scorecard.worldbank.org/en/scorecard/home" title=" Fiche de résultats (a)"> Fiche de résultats
+(a)</a></li>
+</ul>
+</div>
+<div class="ft-main-item">
+<ul>
+<li>
+<p><strong>RESTEZ INFORMÉ</strong> ET DÉCOUVREZ L’ESSENTIEL DE
+NOTRE ACTUALITÉ</p>
+</li>
+<li><a href="https://www.banquemondiale.org/fr/newsletter-subscription" title="S'abonner" class="button" data-form="world bank group newsletters::newsletter">S'abonner</a>
+</li>
+</ul>
+</div>
+</div>
+<div class="ft-legal">
+<div class="ft-legal-list">
+<ul>
+<li>
+<p>© 2025 Groupe de la Banque mondiale. Tous droits réservés.
+</p>
+</li>
+</ul>
+</div>
+<div class="ft-legal-list">
+<ul>
+<li><a href="https://www.banquemondiale.org/fr/about/legal" title="Droits">Droits</a></li>
+<li><a href="https://www.banquemondiale.org/fr/about/legal/privacy-notice" title="Politique de confidentialité">Politique de
+confidentialité</a></li>
+<li><a href="https://www.banquemondiale.org/fr/who-we-are/site-accessibility" title="Accessibilité web">Accessibilité web</a></li>
+<li><a href="https://www.banquemondiale.org/fr/access-to-information" title=" Accès à l’information"> Accès à
+l’information</a></li>
+<li><a href="https://www.banquemondiale.org/fr/about/legal/scams" title="Courriers frauduleux">Courriers frauduleux</a>
+</li>
+<li><a href="https://wbgcmsprod.microsoftcrmportals.com/fr-FR/anonymous-users/int-fraud-management/create-new-complaint/" title="Signaler un cas de fraude ou de corruption">Signaler
+un cas de fraude ou de corruption</a></li>
+</ul>
+</div>
+</div>
+</section>
+</div>
+</footer>
+<div class="cloudservices servicecomponents">
+</div>
+```

@@ -1,5 +1,5 @@
 {
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoImportCompletions": true,
-    "cSpell.words": ["dtypes"]
+    "cSpell.words": ["dotenv", "dtypes", "gemini", "genai"]
 }
