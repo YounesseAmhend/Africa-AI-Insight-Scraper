@@ -157,7 +157,7 @@ def generate(prompt_text):
             # Wait between retries (increasing delay)
             time.sleep(2 ** retries)  # 2, 4, 8 seconds...
 
-# Main execution block
+
 if __name__ == "__main__":
     try:
         # Generate content by sending the processed HTML embedded in the markdown template
