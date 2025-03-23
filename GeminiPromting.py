@@ -1,3 +1,4 @@
+# Import necessary libraries
 from google import genai             # Google's Generative AI library for Gemini API access
 from dotenv import load_dotenv       # For loading environment variables from .env file
 import os                            # For accessing environment variables and file operations
@@ -19,43 +20,25 @@ class RetryLimitExceeded(Exception):
     """Custom exception for when retry limit is exceeded."""
     pass
 
-# Function to read markdown files
-def read_markdown_file(filepath, max_retries=3):
+# Function to read markdown files - kept as in original code
+def read_markdown_file(filepath):
     """Read a markdown file and return its contents as a string.
     
     Args:
         filepath (str): Path to the markdown file to be read
-        max_retries (int): Maximum number of retry attempts
         
     Returns:
         str: The content of the file as a string
-        
-    Raises:
-        RetryLimitExceeded: If the maximum number of retries is exceeded
-        FileNotFoundError: If the file does not exist
     """
-    retries = 0
-    while retries < max_retries:
-        try:
-            with open(filepath, 'r', encoding='utf-8') as file:
-                content = file.read()
-            return content
-        except FileNotFoundError as e:
-            logger.error(f"File not found: {filepath}")
-            raise e  # Don't retry for missing files
-        except Exception as e:
-            retries += 1
-            if retries >= max_retries:
-                logger.error(f"Maximum retries ({max_retries}) exceeded while reading file: {filepath}")
-                raise RetryLimitExceeded(f"Failed to read file after {max_retries} attempts: {str(e)}")
-            logger.warning(f"Error reading file (attempt {retries}/{max_retries}): {str(e)}")
-            time.sleep(1)  # Wait before retrying
-    
-    # This should never execute due to the raise in the loop, but added for safety
-    raise RetryLimitExceeded(f"Failed to read file after {max_retries} attempts")
+    with open(filepath, 'r', encoding='utf-8') as file:
+        content = file.read()
+    return content
 
+# Read two important files
+md_htmltest = read_markdown_file("./testhtml.txt")  # Contains the HTML content to be processed
+md_BluePrint_md = read_markdown_file(NEWS_PROMPTS_MD_PATH)  # Template markdown file (path from constants)
 
-def extract_body_and_insert_to_md(html_content, markdown_template_path, max_retries=3):
+def extract_body_and_insert_to_md(html_content, markdown_template_path):
     """
     Extract content between <body> tags from HTML, remove JavaScript and comments,
     and insert it into the markdown template.
@@ -63,14 +46,9 @@ def extract_body_and_insert_to_md(html_content, markdown_template_path, max_retr
     Args:
         html_content (str): The HTML content to extract the body from
         markdown_template_path (str): Path to the markdown template file
-        max_retries (int): Maximum number of retry attempts
     
     Returns:
         str: The markdown content with the cleaned HTML body inserted
-    
-    Raises:
-        RetryLimitExceeded: If the maximum number of retries is exceeded
-        ValueError: If no body tags are found in the HTML content
     """
     import re  # Import regex library for pattern matching
     
@@ -92,6 +70,11 @@ def extract_body_and_insert_to_md(html_content, markdown_template_path, max_retr
     comment_pattern = re.compile(r'<!--[\s\S]*?-->', re.DOTALL)
     cleaned_body = comment_pattern.sub('', cleaned_body)
     
+    # Note: The following section for removing inline JavaScript is commented out
+    # but kept for potential future use
+    # inline_js_pattern = re.compile(r'\s+on\w+="[^"]*"', re.IGNORECASE)
+    # cleaned_body = inline_js_pattern.sub('', cleaned_body)
+    
     # Remove empty lines (lines with only whitespace)
     cleaned_lines = []
     for line in cleaned_body.split('\n'):
@@ -100,38 +83,27 @@ def extract_body_and_insert_to_md(html_content, markdown_template_path, max_retr
     
     cleaned_body = '\n'.join(cleaned_lines)  # Rejoin the non-empty lines
    
-    # Read the markdown template with retry mechanism
-    retries = 0
-    while retries < max_retries:
-        try:
-            with open(markdown_template_path, 'r', encoding='utf-8') as file:
-                markdown_template = file.read()
-            
-            # Replace the placeholder with the cleaned body content
-            result = markdown_template.replace('[HTML CODE HERE]', cleaned_body)
-            return result
-        except Exception as e:
-            retries += 1
-            if retries >= max_retries:
-                logger.error(f"Maximum retries ({max_retries}) exceeded while processing template")
-                raise RetryLimitExceeded(f"Failed to process template after {max_retries} attempts: {str(e)}")
-            logger.warning(f"Error processing template (attempt {retries}/{max_retries}): {str(e)}")
-            time.sleep(1)  # Wait before retrying
+    # Read the markdown template
+    with open(markdown_template_path, 'r', encoding='utf-8') as file:
+        markdown_template = file.read()
     
-    # This should never execute due to the raise in the loop, but added for safety
-    raise RetryLimitExceeded(f"Failed to process template after {max_retries} attempts")
+    # Replace the placeholder with the cleaned body content
+    result = markdown_template.replace('[HTML CODE HERE]', cleaned_body)
+    
+    return result
 
-def generate(prompt_text, max_retries=3):
+def generate(prompt_text):
     """
     Send a prompt to the Gemini AI API and stream the response to the console.
+    Includes a retry mechanism that attempts the API call up to 3 times before failing.
     
     Args:
         prompt_text (str): The prompt text to send to Gemini
-        max_retries (int): Maximum number of retry attempts
         
     Raises:
-        RetryLimitExceeded: If the maximum number of retries is exceeded
+        RetryLimitExceeded: If the maximum number of 3 retries is exceeded
     """
+    max_retries = 3
     retries = 0
     
     while retries < max_retries:
@@ -182,34 +154,19 @@ def generate(prompt_text, max_retries=3):
             
             logger.warning(f"Error generating content (attempt {retries}/{max_retries}): {str(e)}")
             
-            # Wait longer between retries (exponential backoff)
+            # Wait between retries (increasing delay)
             time.sleep(2 ** retries)  # 2, 4, 8 seconds...
 
 # Main execution block
 if __name__ == "__main__":
     try:
-        # Read the required files with retry mechanism
-        logger.info("Reading HTML test file...")
-        md_htmltest = read_markdown_file("./testhtml.txt")
-        
-        logger.info("Reading markdown template...")
-        md_BluePrint_md = read_markdown_file(NEWS_PROMPTS_MD_PATH)
-        
-        # Process the HTML and generate content
-        logger.info("Extracting body content and inserting into template...")
+        # Generate content by sending the processed HTML embedded in the markdown template
         final_prompt = extract_body_and_insert_to_md(md_htmltest, NEWS_PROMPTS_MD_PATH)
-        
-        logger.info("Sending prompt to Gemini API...")
         generate(final_prompt)
-        
-        logger.info("Process completed successfully")
         
     except RetryLimitExceeded as e:
         logger.error(f"Error: {str(e)}")
-        print(f"\nError: The operation failed after multiple attempts. Please check your code or fix the prompt.")
-        # You could exit with a non-zero code here if desired
-        # import sys
-        # sys.exit(1)
+        print(f"\nError: The API call failed after 3 attempts. Please check the code or fix the prompt.")
         
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
