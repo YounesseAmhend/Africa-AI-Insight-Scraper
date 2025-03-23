@@ -48,6 +48,7 @@ coverage.xml
 .env
 .venv
 env/
+temp_edge_profile/
 venv/
 ENV/
 env.bak/

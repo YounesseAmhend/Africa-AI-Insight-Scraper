@@ -95,8 +95,10 @@ def scrape_news_list(url: str):
     title = soup.select_one(selector=str(selector["title"]))
 
     if link and title:
-        return try_until(lambda: scrape_news_detail(url, title))
-        
+        return (
+            try_until(lambda: scrape_news_detail(url, title))
+            or -1  # -1 just avoid retrying the hall thing again because other
+        )
 
 
 def scrape_news_detail(url: str, title: Tag):
