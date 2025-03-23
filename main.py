@@ -23,9 +23,10 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.FileHandler("scraper.log"), logging.StreamHandler()],
 )
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 llm = Llm()
+
 app = FastAPI(
     title="Africa-AI-Insight-Scraper",
     description="Web scraper for AI and Africa-related content",
@@ -39,13 +40,15 @@ try:
     africa_trigger_phrases = TriggerFile(AFRICA_TRIGGER_PHRASES_PATH)
 
     trigger_words_ai = ai_trigger_words.get()
-    trigger_phrases_ai = ai_trigger_phrases.get()
-    trigger_words_africa = africa_trigger_words.get()
-    trigger_phrases_africa = africa_trigger_phrases.get()
-
     logger.info(f"Loaded {len(trigger_words_ai)} AI trigger words")
+
+    trigger_phrases_ai = ai_trigger_phrases.get()
     logger.info(f"Loaded {len(trigger_phrases_ai)} AI trigger phrases")
+
+    trigger_words_africa = africa_trigger_words.get()
     logger.info(f"Loaded {len(trigger_words_africa)} Africa trigger words")
+
+    trigger_phrases_africa = africa_trigger_phrases.get()
     logger.info(f"Loaded {len(trigger_phrases_africa)} Africa trigger phrases")
 
 except Exception as e:
@@ -77,13 +80,14 @@ def add_source():
     max_retries: int = 3
 
     url = source["url"]
+    
     return try_until(
-        lambda: scrape_news_list(url),
+        lambda: scrape_news(url),
         max_retries=max_retries,
     )
 
 
-def scrape_news_list(url: str):
+def scrape_news(url: str):
     html_content, selector = get_selector(
         url,
         NEWS_PROMPTS_PATH,
@@ -96,12 +100,15 @@ def scrape_news_list(url: str):
 
     if link and title:
         return (
-            try_until(lambda: scrape_news_detail(url, title))
+            try_until(lambda: scrape_news_detail(str(link), title))
             or -1  # -1 just avoid retrying the hall thing again because other
         )
 
 
-def scrape_news_detail(url: str, title: Tag):
+def scrape_news_detail(
+    url: str,
+    title: Tag,
+):
     html_content, selector = get_selector(
         url,
         NEWS_DETAIL_PROMPTS_PATH,
@@ -148,7 +155,10 @@ def try_until(
     raise Exception(message)
 
 
-def get_selector(url: str, template_path: str) -> tuple[str, dict]:
+def get_selector(
+    url: str,
+    template_path: str,
+) -> tuple[str, dict]:
     driver = CustomDriver()
 
     driver.get(url)
