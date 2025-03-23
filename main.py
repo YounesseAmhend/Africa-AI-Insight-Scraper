@@ -96,11 +96,16 @@ def scrape_news(url: str):
     soup = BeautifulSoup(html_content, "html.parser")
 
     link = soup.select_one(selector=str(selector["link"]))
-    title = soup.select_one(selector=str(selector["title"]))
+    title = soup.select_one(selector=str(selector["title"]))        
 
-    if link and title:
+    page_url= None
+    if link:
+        page_url = link.get("href")
+        page_url = href_link(url, page_url)
+
+    if page_url and title:
         return (
-            try_until(lambda: scrape_news_detail(str(link), title))
+            try_until(lambda: scrape_news_detail(page_url, title))
             or -1  # -1 just avoid retrying the hall thing again because other
         )
 
@@ -304,15 +309,7 @@ def get_articles(
         title = element.get_text().strip()
         link = links[i].get("href")
 
-        if isinstance(link, list):
-            link = "".join(
-                link
-            )  # If the link is too long it get divided into a list so we need to get back together
-
-        if link and link.startswith("/"):
-            parsed_url = urlparse(url)
-            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-            link = f"{base_url}{link}"
+        link = href_link(url, link)
 
         logging.debug(f"Title: {title}")
         logging.debug(f"Link: {link}")
@@ -399,3 +396,15 @@ def get_articles(
 
     logging.debug(f"Adding {len(articles)} results from {url} to all_results")
     return articles
+
+def href_link(url, link):
+    if isinstance(link, list):
+        link = "".join(
+                link
+            )  # If the link is too long it get divided into a list so we need to get back together
+
+    if link and link.startswith("/"):
+        parsed_url = urlparse(url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        link = f"{base_url}{link}"
+    return link
