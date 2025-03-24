@@ -80,7 +80,7 @@ def add_source():
     max_retries: int = 3
 
     url = source["url"]
-    
+
     return try_until(
         lambda: scrape_news(url),
         max_retries=max_retries,
@@ -96,9 +96,9 @@ def scrape_news(url: str):
     soup = BeautifulSoup(html_content, "html.parser")
 
     link = soup.select_one(selector=str(selector["link"]))
-    title = soup.select_one(selector=str(selector["title"]))        
+    title = soup.select_one(selector=str(selector["title"]))
 
-    page_url= None
+    page_url = None
     if link:
         page_url = link.get("href")
         page_url = href_link(url, page_url)
@@ -397,11 +397,12 @@ def get_articles(
     logging.debug(f"Adding {len(articles)} results from {url} to all_results")
     return articles
 
+
 def href_link(url, link):
     if isinstance(link, list):
         link = "".join(
-                link
-            )  # If the link is too long it get divided into a list so we need to get back together
+            link
+        )  # If the link is too long it get divided into a list so we need to get back together
 
     if link and link.startswith("/"):
         parsed_url = urlparse(url)
