@@ -1,5 +1,5 @@
 main:
-	python -m uvicorn main:app 
+	python -m uvicorn main:app --reload
 install:
 	pip install -r requirements.txt
 
