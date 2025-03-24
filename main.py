@@ -95,11 +95,10 @@ def add_source():
     end_time = time.time()
     elapsed_time = end_time - start_time
     logger.info(f"Scraping completed in {elapsed_time:.2f} seconds")
-    
-    selector = result["data"] # type: ignore
+
+    selector = result["selector"]  # type: ignore
     # TODO: add the selector to the database
     return result
-
 
 
 def correct_url(url: str) -> str:
@@ -198,7 +197,7 @@ def scrape_news_detail(
             ),
         }
 
-        general_data: Selector = {
+        selector: Selector = {
             "author": page_selector["author"],  # type: ignore
             "body": page_selector["body"],
             "event_date": page_selector["event_date"],
@@ -212,7 +211,7 @@ def scrape_news_detail(
         }
 
         return {
-            "selector": general_data,
+            "selector": selector,
             "data": page_data,
         }
 
