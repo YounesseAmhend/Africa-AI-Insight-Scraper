@@ -124,7 +124,6 @@ def add_source(
                 trigger_ai=trigger_ai
             )
             
-            # Create a new result dictionary with the additional field
             result['db_record_id'] = record_id
 
         except Exception as e:
@@ -141,7 +140,7 @@ def add_source_route():
         "trigger_africa": False,
         "trigger_ai": True,
     }
-
+    # there could be some improvements here ???? maybe add the scrape_news here and pass it as parm ???
     return add_source(source)
 
 
