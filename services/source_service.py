@@ -8,7 +8,7 @@ import my_grpc.services.source_pb2 as pb
 import my_grpc.services.source_pb2_grpc as pb_grpc
 import grpc
 
-from Repositories.source_repository import SourceRepository
+from repositories.source_repository import SourceRepository
 
 
 class SourceService(pb_grpc.SourceServiceServicer):
