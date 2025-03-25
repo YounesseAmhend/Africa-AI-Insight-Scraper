@@ -1,6 +1,4 @@
-# config/database.py
 import os
-import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 import logging
@@ -9,6 +7,14 @@ class DatabaseConfig:
     """
     Centralized database configuration and connection management
     """
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(DatabaseConfig, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(
         self, 
         host: str = os.getenv('DB_HOST', 'localhost'),
@@ -30,6 +36,9 @@ class DatabaseConfig:
         :param min_connections: Minimum connections in pool
         :param max_connections: Maximum connections in pool
         """
+        if self._initialized:
+            return
+            
         self.connection_params = {
             'host': host,
             'database': database,
@@ -48,6 +57,8 @@ class DatabaseConfig:
         except Exception as e:
             logging.error(f"Database connection pool error: {e}")
             raise
+        
+        self._initialized = True
 
     @contextmanager
     def get_connection(self):
@@ -79,7 +90,7 @@ class DatabaseConfig:
             trigger_africa BOOLEAN DEFAULT FALSE,
             trigger_ai BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
         )
         """
         

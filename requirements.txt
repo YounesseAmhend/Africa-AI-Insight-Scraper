@@ -8,3 +8,8 @@ python-dotenv
 grpcio 
 grpcio-tools
 psycopg2
+grpcio-reflection 
+grpcio-health-checking 
+protobuf 
+mypy-protobuf 
+types-protobuf 

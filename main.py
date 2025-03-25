@@ -21,7 +21,7 @@ from utils.trigger_file import TriggerFile
 from time import sleep
 import time
 from config.db import DatabaseConfig
-from config.source_service import SourceService
+from Repositories.source_repository import SourceRepository
 
 
 logging.basicConfig(
@@ -64,7 +64,7 @@ except Exception as e:
     trigger_phrases_ai = []
     trigger_words_africa = []
     trigger_phrases_africa = []
-    
+
     # This is good in debug so we can know that we need to fix something
     if DEBUG_MODE:
         raise e
@@ -75,13 +75,12 @@ HEADERS = {
     + "Chrome/91.0.4472.124 Safari/537.36"
 }
 
-def add_source(
-    source: dict, 
-    max_retries: int = 3
-):
+
+def add_source(source: dict, max_retries: int = 3):
+    # * this is tempory we will use grpc so this will not make sence
     """
     Add a new source with selector storage
-    
+
     :param source: Source dictionary
     :param scrape_func: Function to scrape the source
     :param max_retries: Maximum number of scraping retries
@@ -92,48 +91,44 @@ def add_source(
     trigger_ai = source.get("trigger_ai", False)
 
     start_time = time.time()
-    
-    # Use try_until for scraping with retry mechanism
+
     result = try_until(
         lambda: scrape_news(url),
         max_retries=max_retries,
     )
-    
+
     end_time = time.time()
     elapsed_time = end_time - start_time
-    
-    # Log scraping time
+
     logging.info(f"Scraping completed in {elapsed_time:.2f} seconds")
-    
-    # Extract selector from result
+
     selector = result["selector"]  # type: ignore
-    
+
     if selector:
-        # Initialize database config and service
         db_config = DatabaseConfig()
         db_config.create_tables()  # Ensure tables exist
-        
-        source_service = SourceService(db_config)
-        
+
+        source_service = SourceRepository(db_config)
+
         try:
             # Store source with selector
-            record_id = source_service.upsert_source(
-                url=url, 
+            record_id = source_service.add_source(
+                url=url,
                 selector=selector,
                 trigger_africa=trigger_africa,
-                trigger_ai=trigger_ai
+                trigger_ai=trigger_ai,
             )
-            
-            result['db_record_id'] = record_id
+
+            result["db_record_id"] = record_id  # type: ignore
 
         except Exception as e:
             logging.error(f"Failed to store source: {e}")
-    
+
     return result
+
 
 @app.get("/add")
 def add_source_route():
-
 
     source = {
         "url": "https://www.up.ac.za/news",
@@ -141,6 +136,7 @@ def add_source_route():
         "trigger_ai": True,
     }
     # there could be some improvements here ???? maybe add the scrape_news here and pass it as parm ???
+    # * Nah that is really a bad idea
     return add_source(source)
 
 
@@ -246,7 +242,6 @@ def scrape_news_detail(
             "event_date": page_selector["event_date"],
             "image_url": page_selector["image_url"],
             "post_date": page_selector["post_date"],
-            
             "link": general_selector["link"],
             "load_more_button": general_selector["load_more_button"],
             "next_button": general_selector["next_button"],
@@ -262,14 +257,15 @@ def scrape_news_detail(
 def try_until(
     func: Callable[[], None | object],
     max_retries: int = 3,
-    message: str = "Failed to get valid HTML content and selectors after maximum retries. Please check the prompt or the code.",
-) :
+    error_message: str = "Failed to get valid HTML content and selectors after maximum retries. Please check the prompt or the code.",
+) -> object:
+    #! FOR THE LOVE OF GOD STOP USING AI!!!!!!!!!! CODE IT YOURSELF or at least REFACTOR THE GENERATED FREAKING CODE!!!!!!!!!!!
     """Retry a function until it returns a non-None value or max retries is reached.
 
     Args:
         func: The function to retry, which should return None or an object
         max_retries: Maximum number of retry attempts (default: 3)
-        message: Error message to raise if all retries fail (default: generic message)
+        error_message: Error message to raise if all retries fail
 
     Returns:
         object: The first non-None result from func
@@ -281,7 +277,7 @@ def try_until(
         result = func()
         if result:
             return result
-    raise Exception(message)
+    raise Exception(error_message)
 
 
 def get_selector(
@@ -530,4 +526,3 @@ def resolve_relative_url(
         url_fragment = f"{base_url}{url_fragment}"
 
     return correct_url(url_fragment)
-

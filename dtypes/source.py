@@ -8,3 +8,4 @@ class Source(TypedDict):
     trigger_africa: bool
     selectors: Selector
     
+    
