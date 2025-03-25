@@ -4,19 +4,21 @@ import time
 from config.db import DatabaseConfig
 
 from main import scrape_news, try_until
-import my_grpc.services.source_pb2 as pb
+from my_grpc.services.source_pb2  import SourceRequest, SourceResponse
 import my_grpc.services.source_pb2_grpc as pb_grpc
-import grpc
+from grpc import ServicerContext
 
 from repositories.source_repository import SourceRepository
 
 
 class SourceService(pb_grpc.SourceServiceServicer):
+
     def addSource(
         self,
-        request: pb.SourceRequest,
-        context,
-    ) -> pb.SourceResponse:
+        request: SourceRequest,
+        context: ServicerContext,
+    ) -> SourceResponse:
+
         url = request.url
         trigger_africa = not request.containsAfricaContent
         trigger_ai = not request.containsAiContent
@@ -55,4 +57,6 @@ class SourceService(pb_grpc.SourceServiceServicer):
             except Exception as e:
                 logging.error(f"Failed to store source: {e}")
 
-        return pb.SourceResponse(message="Failed")
+        return SourceResponse(
+            message=str(result), #* Just for testing purposes otherwise this is completely stupid
+        )

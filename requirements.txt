@@ -6,6 +6,7 @@ selenium
 google-genai
 python-dotenv
 grpcio 
+grpc-stubs
 grpcio-tools
 psycopg2
 grpcio-reflection 
