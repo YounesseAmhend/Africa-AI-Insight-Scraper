@@ -1,17 +1,17 @@
-# services/source_service.py
 import logging
 import time
 from config.db import DatabaseConfig
 
-from main import scrape_news, try_until
-from my_grpc.services.source_pb2  import SourceRequest, SourceResponse
-import my_grpc.services.source_pb2_grpc as pb_grpc
 from grpc import ServicerContext
+
+from main import scrape_news, try_until
+from rpc.services.source_pb2  import SourceRequest, SourceResponse
+from rpc.services.source_pb2_grpc import SourceServiceServicer
 
 from repositories.source_repository import SourceRepository
 
 
-class SourceService(pb_grpc.SourceServiceServicer):
+class SourceService(SourceServiceServicer):
 
     def addSource(
         self,

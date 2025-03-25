@@ -21,7 +21,7 @@ from utils.trigger_file import TriggerFile
 from time import sleep
 import time
 from config.db import DatabaseConfig
-from Repositories.source_repository import SourceRepository
+from repositories.source_repository import SourceRepository
 
 
 logging.basicConfig(
