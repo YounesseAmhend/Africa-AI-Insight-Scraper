@@ -7,3 +7,4 @@ google-genai
 python-dotenv
 grpcio 
 grpcio-tools
+psycopg2

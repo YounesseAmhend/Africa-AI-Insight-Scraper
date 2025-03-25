@@ -32,7 +32,7 @@ class LlmResponse:
         # Pattern to match Python code blocks
         pattern = r"```python\n(.*?)```"
         matches = re.findall(pattern, self.text, re.DOTALL)
-
+        print(matches[0])
         code = eval(matches[0]) if matches else {}
 
         if code:
