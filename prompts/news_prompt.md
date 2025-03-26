@@ -47,6 +47,44 @@ Ensure the output is a Python dictionary in the exact format shown above, with n
         next_button: str | None
 ```
 
+### **Example 1** (Pagination with "Next" Button, No Load More)
+
+```python
+{
+    "title": "h2.article-title a",
+    "link": "h2.article-title a",
+    "load_more_button": None,
+    "next_button": "ul.pagination li.next a"
+}
+```
+
+---
+
+### **Example 2** (Infinite Scrolling with "Load More" Button, No Pagination)
+
+```python
+{
+    "title": "div.news-item h3",
+    "link": "div.news-item h3 a",
+    "load_more_button": "button.load-more",
+    "next_button": None
+}
+```
+
+---
+
+### **Example 3** (Pagination and "Load More" Button Present)
+
+```python
+{
+    "title": "article h1.headline",
+    "link": "article h1.headline a",
+    "load_more_button": "button#loadMore",
+    "next_button": "nav.pagination a.next"
+}
+```
+
+
 ### HTML Code for Analysis
 
 ```html

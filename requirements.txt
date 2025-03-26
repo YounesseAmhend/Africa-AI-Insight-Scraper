@@ -6,6 +6,7 @@ selenium
 google-genai
 python-dotenv
 grpcio 
+google-generativeai
 grpc-stubs
 grpcio-tools
 psycopg2

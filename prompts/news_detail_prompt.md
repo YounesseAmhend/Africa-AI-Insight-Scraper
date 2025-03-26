@@ -59,20 +59,6 @@ Ensure the output is a Python dictionary in the exact format shown above, with n
 }
 ```
 
-```python
-{
-    "author": {
-        "name": "div.author span.name",
-        "link": None,
-        "image_url": None
-    },
-    "body": "div.article-content",
-    "image_url": None,
-    "event_date": None,
-    "post_date": "div.post-meta time"
-}
-```
-
 ### HTML Code for Analysis
 
 ```html

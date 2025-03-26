@@ -7,10 +7,12 @@ import requests
 from bs4 import BeautifulSoup, Tag
 from fastapi import FastAPI
 
-from ai.llm import Llm, Prompt
+from ai.prompt import Prompt
+from ai.llm import Llm
 from constants import *
-from constants import SOURCES
-from dtypes.selector import News, Selector
+from dtypes.news_dict import NewsDict
+from dtypes.selector import Selector
+from rpc.services.source_pb2 import SourceRequest
 from utils.infinite_scrolling_iterator import InfiniteScrollIterator
 from utils.pagination_iterator import PaginationIterator
 from utils.utils import contains_triggers
@@ -87,8 +89,8 @@ def add_source(source: dict, max_retries: int = 3):
     :return: Scraping result with additional information
     """
     url = source["url"]
-    trigger_africa = source.get("trigger_africa", False)
-    trigger_ai = source.get("trigger_ai", False)
+    trigger_africa = source["trigger_africa"]
+    trigger_ai = source["trigger_ai"]
 
     start_time = time.time()
 
@@ -113,10 +115,12 @@ def add_source(source: dict, max_retries: int = 3):
         try:
             # Store source with selector
             record_id = source_service.add_source(
-                url=url,
                 selector=selector,
-                trigger_africa=trigger_africa,
-                trigger_ai=trigger_ai,
+                source=SourceRequest(
+                    url=url,
+                    containsAiContent=(not trigger_ai),
+                    containsAfricaContent=(not trigger_africa),
+                ),
             )
 
             result["db_record_id"] = record_id  # type: ignore
@@ -148,26 +152,54 @@ def correct_url(url: str) -> str:
 
 
 def scrape_news(url: str):
+
+    # Benchmark get_selector
+    start_get_selector = time.time()
     html_content, general_selector = get_selector(
         url,
         NEWS_PROMPTS_PATH,
     )
+    end_get_selector = time.time()
+    logging.info(
+        f"get_selector took {end_get_selector - start_get_selector:.2f} seconds"
+    )
 
+    # Benchmark BeautifulSoup parsing
+    start_parse = time.time()
     soup = BeautifulSoup(html_content, "html.parser")
+    end_parse = time.time()
+    logging.info(f"HTML parsing took {end_parse - start_parse:.2f} seconds")
 
+    # Benchmark element selection
+    start_select = time.time()
     link = soup.select_one(selector=str(general_selector["link"]))
     title = soup.select_one(selector=str(general_selector["title"]))
+    end_select = time.time()
+    logging.info(f"Element selection took {end_select - start_select:.2f} seconds")
 
     page_url = None
     if link:
         page_url = link.get("href")
 
     if page_url and title:
+        # Benchmark URL resolution
+        start_resolve = time.time()
         page_url = resolve_relative_url(url, page_url)
-        return (
+        end_resolve = time.time()
+        logging.info(f"URL resolution took {end_resolve - start_resolve:.2f} seconds")
+
+        # Benchmark news detail scraping
+        start_detail = time.time()
+        result = (
             try_until(lambda: scrape_news_detail(general_selector, page_url, title))
             or -1  # -1 just avoid retrying the hall thing again because other
         )
+        end_detail = time.time()
+        logging.info(
+            f"News detail scraping took {end_detail - start_detail:.2f} seconds"
+        )
+
+        return result
 
 
 def scrape_news_detail(
@@ -218,7 +250,7 @@ def scrape_news_detail(
             event_date_element.get_text().strip() if event_date_element else None
         )
 
-        page_data: News = {
+        page_data: NewsDict = {
             "title": title.get_text().strip(),
             "link": page_url,
             "body": body_text,
@@ -315,7 +347,7 @@ def root() -> list[dict]:
     """
     all_results: list[dict] = []
 
-    for source in SOURCES:
+    for source in []:
         logging.debug(f"Processing source: {source['url']}")
 
         source_results = handle_source(source)
@@ -328,7 +360,7 @@ def root() -> list[dict]:
     return all_results
 
 
-def handle_source(source: Source):
+def handle_source(source: SourceDict):
     url = source["url"]
     trigger_ai = source["trigger_ai"]
     trigger_africa = source["trigger_africa"]

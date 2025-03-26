@@ -34,7 +34,6 @@ Ensure the output is a Python dictionary in the exact format shown above, with n
     "next_button": "ul.pagination li.next a"
 }
 ```
-
 ### HTML Code for Analysis
 
 ```html

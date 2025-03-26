@@ -20,8 +20,7 @@ class SourceService(SourceServiceServicer):
     ) -> SourceResponse:
 
         url = request.url
-        trigger_africa = not request.containsAfricaContent
-        trigger_ai = not request.containsAiContent
+
 
         start_time = time.time()
 
@@ -46,10 +45,9 @@ class SourceService(SourceServiceServicer):
             try:
                 # Store source with selector
                 record_id = source_repo.add_source(
-                    url=url,
                     selector=selector,
-                    trigger_africa=trigger_africa,
-                    trigger_ai=trigger_ai,
+                    source = request,
+                    
                 )
 
                 result["db_record_id"] = record_id  # type: ignore
