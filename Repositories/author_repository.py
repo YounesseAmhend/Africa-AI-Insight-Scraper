@@ -1,5 +1,5 @@
 from config.db import DatabaseConfig
-from protos.author_pb2 import AuthorResponse
+from rpc.protos.author_pb2 import AuthorResponse
 
 class AuthorRepository:
     TABLE_SCHEMA = """

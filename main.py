@@ -12,7 +12,7 @@ from ai.llm import Llm
 from constants import *
 from dtypes.news_dict import NewsDict
 from dtypes.selector import Selector
-from rpc.services.source_pb2 import SourceRequest
+from rpc.protos.source_pb2 import SourceRequest
 from utils.infinite_scrolling_iterator import InfiniteScrollIterator
 from utils.pagination_iterator import PaginationIterator
 from utils.utils import contains_triggers

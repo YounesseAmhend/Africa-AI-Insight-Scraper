@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from rpc.services import source_pb2 as rpc_dot_services_dot_source__pb2
+from protos import source_pb2 as protos_dot_source__pb2
 
 GRPC_GENERATED_VERSION = '1.71.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in rpc/services/source_pb2_grpc.py depends on'
+        + f' but the generated code in protos/source_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,13 +36,13 @@ class SourceServiceStub(object):
         """
         self.addSource = channel.unary_unary(
                 '/source.SourceService/addSource',
-                request_serializer=rpc_dot_services_dot_source__pb2.SourceRequest.SerializeToString,
-                response_deserializer=rpc_dot_services_dot_source__pb2.SourceResponse.FromString,
+                request_serializer=protos_dot_source__pb2.SourceRequest.SerializeToString,
+                response_deserializer=protos_dot_source__pb2.SourceResponse.FromString,
                 _registered_method=True)
         self.scrape = channel.unary_unary(
                 '/source.SourceService/scrape',
-                request_serializer=rpc_dot_services_dot_source__pb2.ScrapeRequest.SerializeToString,
-                response_deserializer=rpc_dot_services_dot_source__pb2.ScrapeResponse.FromString,
+                request_serializer=protos_dot_source__pb2.ScrapeRequest.SerializeToString,
+                response_deserializer=protos_dot_source__pb2.ScrapeResponse.FromString,
                 _registered_method=True)
 
 
@@ -66,13 +66,13 @@ def add_SourceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'addSource': grpc.unary_unary_rpc_method_handler(
                     servicer.addSource,
-                    request_deserializer=rpc_dot_services_dot_source__pb2.SourceRequest.FromString,
-                    response_serializer=rpc_dot_services_dot_source__pb2.SourceResponse.SerializeToString,
+                    request_deserializer=protos_dot_source__pb2.SourceRequest.FromString,
+                    response_serializer=protos_dot_source__pb2.SourceResponse.SerializeToString,
             ),
             'scrape': grpc.unary_unary_rpc_method_handler(
                     servicer.scrape,
-                    request_deserializer=rpc_dot_services_dot_source__pb2.ScrapeRequest.FromString,
-                    response_serializer=rpc_dot_services_dot_source__pb2.ScrapeResponse.SerializeToString,
+                    request_deserializer=protos_dot_source__pb2.ScrapeRequest.FromString,
+                    response_serializer=protos_dot_source__pb2.ScrapeResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -100,8 +100,8 @@ class SourceService(object):
             request,
             target,
             '/source.SourceService/addSource',
-            rpc_dot_services_dot_source__pb2.SourceRequest.SerializeToString,
-            rpc_dot_services_dot_source__pb2.SourceResponse.FromString,
+            protos_dot_source__pb2.SourceRequest.SerializeToString,
+            protos_dot_source__pb2.SourceResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -127,8 +127,8 @@ class SourceService(object):
             request,
             target,
             '/source.SourceService/scrape',
-            rpc_dot_services_dot_source__pb2.ScrapeRequest.SerializeToString,
-            rpc_dot_services_dot_source__pb2.ScrapeResponse.FromString,
+            protos_dot_source__pb2.ScrapeRequest.SerializeToString,
+            protos_dot_source__pb2.ScrapeResponse.FromString,
             options,
             channel_credentials,
             insecure,

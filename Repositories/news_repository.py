@@ -1,11 +1,11 @@
 import datetime
 from config.db import DatabaseConfig
+from rpc.protos.news_pb2 import NewsAddRequest
 
 
 
 
 
-from rpc.services.news_pb2 import NewsAddRequest
 
 class NewsRepository:
     """
