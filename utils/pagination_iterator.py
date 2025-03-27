@@ -10,7 +10,7 @@ class PaginationIterator:
         driver: CustomDriverProtocol,
         css_selector: str,
         timeout_s: float,
-        limit: int = 20,
+        limit: int | None = 20,
     ) -> None:
         self.currentPage = 1
         self.limit = limit
@@ -19,7 +19,7 @@ class PaginationIterator:
         self.css_selector = css_selector
 
     def __next__(self) -> str:
-        if self.currentPage > self.limit:
+        if self.limit and self.currentPage > self.limit:
             raise StopIteration
 
         if self.currentPage > 1:
