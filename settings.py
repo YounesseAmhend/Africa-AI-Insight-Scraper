@@ -1,7 +1,7 @@
 from datetime import date
 
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 
 # Rate limiting settings
@@ -14,7 +14,7 @@ GEMINI_MODEL = "gemini-2.0-flash"
 MAX_TOKENS = 8192
 
 
-GRPC_ADDRESS = "localhost:50051"
+PORT = "50051"
 
 LAST_FETCH_DATE = date(
     year=2020,

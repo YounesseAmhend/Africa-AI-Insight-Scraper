@@ -8,7 +8,7 @@ from psycopg2.extras import Json
 import logging
 
 from dtypes.selector import Selector
-from models.source import Source
+from models.source import Source, SourceUpdate
 from protos.source_pb2 import SourceRequest
 
 
@@ -148,7 +148,7 @@ class SourceRepository:
         """
         update_query = """
         UPDATE sources
-        SET createdAt = %s
+        SET updatedAt = %s
         WHERE id = %s
         """
         try:
@@ -167,7 +167,7 @@ class SourceRepository:
     def upsert_source(
         self,
         selector: Selector,
-        source: SourceRequest,
+        source: SourceRequest | SourceUpdate,
     ) -> int:
         """
         Insert or update source with selector
@@ -207,5 +207,5 @@ class SourceRepository:
                 logging.info(f"Source stored/updated for URL: {source.url}")
                 return record_id
         except Exception as e:
-            logging.error(f"Error storing source: {e}")
+            logging.info(f"Error storing source: {e}")
             raise

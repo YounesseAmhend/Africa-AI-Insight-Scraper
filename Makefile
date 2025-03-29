@@ -19,4 +19,14 @@ client:
 	
 
 server:
-	python grpc_server.py
+	python app.py
+
+
+build:
+	docker build . -t scraper
+
+run-build:
+	docker run -p 50051:50051 scraper
+
+delete-build:
+	docker rmi -f scraper

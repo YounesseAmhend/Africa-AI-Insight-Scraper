@@ -2,6 +2,7 @@ import datetime
 import logging
 from config.db import DatabaseConfig
 from models.news import NewsAdd
+from utils.checker import Checker
 
 
 class NewsRepository:
@@ -41,53 +42,13 @@ class NewsRepository:
             ) VALUES (
                 %s, %s, %s, %s, %s, %s, %s
             )
-            ON CONFLICT (url) DO NOTHING
+            
         """
 
-        date_formats = [
-            "%Y-%m-%dT%H:%M:%S",  # ISO 8601
-            "%Y-%m-%d %H:%M:%S",  # Common datetime format
-            "%Y/%m/%d %H:%M:%S",  # Slash separated
-            "%d/%m/%Y %H:%M:%S",  # European format
-            "%m/%d/%Y %H:%M:%S",  # US format
-            "%Y-%m-%d",  # Date only
-            "%d %b %Y",  # 01 Jan 2023
-            "%b %d, %Y",  # Jan 01, 2023
-            "%d %B %Y",  # 01 January 2023
-            "%B %d, %Y",  # January 01, 2023
-        ]
-        date_prefixes = [
-            "Posted on",
-            "Posted",
-            "Published on",
-            "Published",
-            "Last updated on",
-            "Last updated",
-            "Updated on",
-            "Updated",
-            "Created on",
-            "Created",
-            "Date:",
-            "Time:",
-            ":",
-        ]
-        for prefix in date_prefixes:
-            post_date = data.postDate.replace(prefix, "").strip()
-
-        date = None
-        for fmt in date_formats:
-            try:
-                date = datetime.datetime.strptime(
-                    post_date, fmt
-                )
-                break
-            except ValueError:
-                continue
-
         # Convert post_date from string to datetime if it exists
+        date = Checker.get_date(data.postDate)
         if date is None:
-            logging.error(f"Could not parse date: {post_date}")
-
+            logging.info(f"Could not parse date: {data.postDate}")
         params = (
             data.sourceId,
             data.title,
@@ -98,7 +59,15 @@ class NewsRepository:
             data.imageUrl,
         )
 
+        logging.info(f"Preparing to insert news article with params: {params}")
+
         with self.db_config.get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, params)
-                conn.commit()
+                try:
+                    logging.info("Executing SQL query to insert news article")
+                    cursor.execute(query, params)
+                    conn.commit()
+                    logging.info("Successfully inserted news article")
+                except Exception as e:
+                    logging.error(f"Failed to insert news article: {str(e)}")
+                    raise

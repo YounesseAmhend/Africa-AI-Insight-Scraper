@@ -1,10 +1,10 @@
-import asyncio
 import datetime
 import logging
 import time
 from typing import Callable
 
 from bs4 import BeautifulSoup, ParserRejectedMarkup, Tag
+import pytz
 from ai.llm import Llm
 from ai.prompt import Prompt
 
@@ -18,13 +18,14 @@ from constants import (
     NEWS_DETAIL_PROMPTS_PATH,
     NEWS_PROMPTS_PATH,
 )
+from dtypes.author_dict import AuthorDict
+from models.author import Author
 from dtypes.news_dict import NewsDict
 from dtypes.selector import Selector
 from models.news import NewsAdd
+from models.source import Source, SourceUpdate
 from repositories.author_repository import AuthorRepository
 from repositories.news_repository import NewsRepository
-from protos.author_pb2 import AuthorRequest
-from protos.news_pb2 import NewsAddRequest
 from protos.source_pb2 import (
     ScrapeRequest,
     ScrapeResponse,
@@ -35,6 +36,7 @@ from protos.source_pb2 import (
 from repositories.source_repository import SourceRepository
 from protos.source_pb2_grpc import SourceServiceServicer
 from settings import DEBUG_MODE, LAST_FETCH_DATE
+from utils.checker import Checker
 from utils.custom_driver import CustomDriver
 from utils.custom_soup import CustomSoup
 from utils.infinite_scrolling_iterator import InfiniteScrollIterator
@@ -42,10 +44,14 @@ from utils.pagination_iterator import PaginationIterator
 from utils.trigger_file import TriggerFile
 from utils.utils import contains_triggers
 
-llm = Llm()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("scraper.log"), logging.StreamHandler()],
+)
 
-class Source:
-    id: int
+utc = pytz.UTC
+llm = Llm()
 
 
 def try_until(
@@ -138,7 +144,14 @@ def scrape_news(url: str):
         # Benchmark news detail scraping
         start_detail = time.time()
         result = (
-            try_until(lambda: scrape_news_detail(general_selector, page_url, title))
+            try_until(
+                lambda: scrape_news_detail(
+                    general_selector,
+                    page_url,
+                    title,
+                ),
+                error_message="Failed in scrape_news_detail",
+            )
             or -1  # -1 just avoid retrying the hall thing again because other
         )
         end_detail = time.time()
@@ -215,6 +228,37 @@ def scrape_news_detail(
             ),
         }
 
+        news = NewsAdd(
+            authorId=None,
+            title=title.get_text().strip(),
+            url=page_url,
+            sourceId=0,
+            body=body_text,
+            postDate=post_date.get_text().strip(),
+            imageUrl=image_url,
+        )
+
+        if image_url and not Checker.is_valid_url(image_url):
+            page_selector["image_url"] = None 
+
+        if image_url and not Checker.is_valid_url(image_url):
+            page_selector["image_url"] = None
+
+        if author_name and not author_name.strip():
+            page_selector["author"] = None
+
+        if author_name and Checker.is_date(author_name):
+            page_selector["author"] = None
+
+        if author_image_url and not Checker.is_valid_url(author_image_url):
+            page_selector["author"]['image_url'] = None # type: ignore
+
+        if author_link and not Checker.is_valid_url(author_link):
+            page_selector["author"]['link'] = None # type: ignore
+
+        if image_url and not Checker.is_valid_url(image_url):
+            raise ValueError(f"Invalid author image URL: {image_url}")
+
         selector: Selector = {
             "author": page_selector["author"],  # type: ignore
             "body": page_selector["body"],
@@ -258,12 +302,12 @@ try:
 except Exception as e:
     logging.error(f"Error loading trigger files: {str(e)}")
 
-    # This is good in debug so we can know that we need to fix something
+    # This is good in info so we can know that we need to fix something
     if DEBUG_MODE:
         raise e
 
 
-def is_valid_source(
+def is_valid_article(
     title: str,
     trigger_africa: bool,
     trigger_ai: bool,
@@ -271,7 +315,7 @@ def is_valid_source(
     should_add_africa = False
 
     if trigger_africa:
-        logging.debug(f"Checking for Africa triggers in: {title}")
+        logging.info(f"Checking for Africa triggers in: {title}")
 
         should_add_africa = contains_triggers(
             title,
@@ -280,12 +324,12 @@ def is_valid_source(
         )
 
         if "africa" in title.lower():
-            logging.debug(f"Found Africa keyword in: {title}")
+            logging.info(f"Found Africa keyword in: {title}")
 
     should_add_ai = False
 
     if trigger_ai:
-        logging.debug(f"Checking for AI triggers in: {title}")
+        logging.info(f"Checking for AI triggers in: {title}")
 
         should_add_ai = contains_triggers(
             title,
@@ -294,7 +338,7 @@ def is_valid_source(
         )
 
         if should_add_ai:
-            logging.debug(f"Found AI trigger in: {title}")
+            logging.info(f"Found AI trigger in: {title}")
 
     should_add = should_add_ai == trigger_ai and should_add_africa == trigger_africa
 
@@ -312,273 +356,358 @@ class SourceService(SourceServiceServicer):
         author_repository = AuthorRepository()
         source_repository = SourceRepository()
         news_repository = NewsRepository()
+
         sources = source_repository.get_sources()
 
         driver = CustomDriver()
 
         for source in sources:
 
-            url = source.url
-            trigger_ai = source.triggerAi
-            trigger_africa = source.triggerAfrica
-            driver.get(url)
+            self._handle_source(
+                author_repository,
+                source_repository,
+                news_repository,
+                driver,
+                source,
+            )
 
-            for i in range(3):
-                if i > 0:
-                    source = source_repository.get_source(source.id)
+        driver.quit()
+        return ScrapeResponse()
 
-                selector: Selector = source.selector  # type: ignore
-                author_selector = selector["author"]
+    def _handle_source(
+        self,
+        author_repository: AuthorRepository,
+        source_repository: SourceRepository,
+        news_repository: NewsRepository,
+        driver: CustomDriver,
+        source: Source,
+    ):
+        url = source.url
+        trigger_ai = source.triggerAi
+        trigger_africa = source.triggerAfrica
+        driver.get(url)
 
-                next_button_selector = selector["next_button"]
-                load_more_selector = selector["load_more_button"]
+        MAX_RETRIES = 3
 
-                logging.debug(f"Navigating to URL: {url}")
+        for i in range(MAX_RETRIES):
+            if i > 0:
+                source = source_repository.get_source(source.id)
+
+            selector: Selector = source.selector  # type: ignore
+            author_selector = selector["author"]
+
+            next_button_selector = selector["next_button"]
+            load_more_selector = selector["load_more_button"]
+
+            logging.info(f"Navigating to URL: {url}")
+
+            try:
+                limit: int | None = None
+
+                timeout_s: float = 10
+                self._handle_content(
+                    author_repository,
+                    source_repository,
+                    news_repository,
+                    driver,
+                    source,
+                    url,
+                    trigger_ai,
+                    trigger_africa,
+                    selector,
+                    author_selector,
+                    next_button_selector,
+                    load_more_selector,
+                    limit,
+                    timeout_s,
+                )
+
+                break
+
+            except ParserRejectedMarkup as e:
+                logging.error(
+                    f"HTML parsing error scraping source {source.url}: {str(e)}",
+                    exc_info=True,
+                )
+                continue
+            except KeyError as e:
+                logging.error(
+                    f"Missing selector key error scraping source {source.url}: {str(e)}",
+                    exc_info=True,
+                )
+                continue
+            except AttributeError as e:
+                logging.error(
+                    f"Attribute access error scraping source {source.url}: {str(e)}",
+                    exc_info=True,
+                )
+                continue
+            except ValueError as e:
+                logging.error(
+                    f"Value error scraping source {source.url}: {str(e)}",
+                    exc_info=True,
+                )
+                continue
+            except Exception as e:
+                logging.error(
+                    f"Unexpected error scraping source {source.url}: {str(e)}",
+                    exc_info=True,
+                )
+                continue
+
+    def _handle_content(
+        self,
+        author_repository: AuthorRepository,
+        source_repository: SourceRepository,
+        news_repository: NewsRepository,
+        driver: CustomDriver,
+        source: Source,
+        url: str,
+        trigger_ai: bool,
+        trigger_africa: bool,
+        selector: Selector,
+        author_selector: AuthorDict | None,
+        next_button_selector: str | None,
+        load_more_selector: str | None,
+        limit: int | None,
+        timeout_s: float,
+    ) -> None:
+        iterator = (
+            InfiniteScrollIterator(
+                custom_driver=driver,
+                css_selector=str(load_more_selector),
+                timeout_s=timeout_s,
+                limit=limit,
+            )
+            if next_button_selector is None
+            else PaginationIterator(
+                driver=driver,
+                css_selector=str(next_button_selector),
+                timeout_s=timeout_s,
+                limit=limit,
+            )
+        )
+
+        for loaded_content in iterator:
+            current_url = driver.driver.execute_script("return window.location.href;")
+            print(f"Current url: {current_url}")
+            try:
+                self._handle_articles(
+                    author_repository,
+                    news_repository,
+                    driver,
+                    source,
+                    url,
+                    trigger_ai,
+                    trigger_africa,
+                    selector,
+                    author_selector,
+                    loaded_content,
+                )
+            except StopIteration:
+                break
+            driver.get(current_url)
+
+        source_repository.update_at(
+            source.id,
+            datetime.datetime.now(),
+        )
+
+    def _handle_articles(
+        self,
+        author_repository: AuthorRepository,
+        news_repository: NewsRepository,
+        driver: CustomDriver,
+        source: Source,
+        url: str,
+        trigger_ai: bool,
+        trigger_africa: bool,
+        selector: Selector,
+        author_selector: AuthorDict | None,
+        loaded_content: str,
+    ):
+        logging.info("Parsing HTML with BeautifulSoup")
+        soup = BeautifulSoup(loaded_content, "html.parser")
+
+        logging.info(f"Selecting elements with selector: {selector['title']}")
+        elements = soup.select(selector["title"])
+
+        logging.info(f"Found {len(elements)} title elements")
+
+        logging.info(f"Selecting links with selector: {selector['link']}")
+        links = soup.select(selector["link"])
+
+        logging.info(f"Found {len(links)} link elements")
+
+        logging.info(f"Processing {len(elements)} elements")
+
+        for i, element in enumerate(elements):
+            logging.info(f"Processing element {i+1}/{len(elements)}")
+
+            title = element.get_text().strip()
+
+            should_add = is_valid_article(
+                title,
+                trigger_africa=trigger_africa,
+                trigger_ai=trigger_ai,
+            )
+
+            logging.info(f"Title: {title}")
+            logging.info(f"Should add this result: {should_add}")
+
+            if should_add:
+                news_url = links[i].get("href")
+
+                if news_url:
+                    news_url = CustomSoup.resolve_relative_url(url, news_url)
+
+                    # Skip entries with no link (can't fetch additional data)
+                if news_url is None:
+                    logging.info("Skipping - link is None")
+                    continue
+
+                logging.info(f"Fetching author information from: {news_url}")
+
+                news_url = CustomSoup.resolve_relative_url(url, news_url)
+
+                driver.get(news_url)
+                news_page = driver.get_html()
+                soup = CustomSoup(news_page)
+
+                author_id = self._get_create_author(
+                    author_repository,
+                    url,
+                    trigger_ai,
+                    trigger_africa,
+                    author_selector,
+                    soup,
+                )
+
+                body = soup.select_text(selector["body"])
+                post_date = soup.select_text(selector["post_date"])
+                image_url = soup.select_url(
+                    css_selector=selector["image_url"],
+                    base_url=url,
+                )
+
+                if not (body and post_date):
+                    self.addUpdateSource(
+                        request=SourceRequest(
+                            url=source.url,
+                            containsAfricaContent=(not source.triggerAfrica),
+                            containsAiContent=(not source.triggerAi),
+                        )
+                    )
+                    raise Exception(
+                        "The Body selector and the post selector are outdated valid"
+                    )
+
+                date = Checker.get_date(post_date)
+
+                if date is None:
+                    raise ValueError(f"Could not parse date: {post_date}")
+                if source.updatedAt and datetime.datetime.fromisoformat(
+                    source.updatedAt
+                ).replace(tzinfo=pytz.UTC) > date.replace(tzinfo=pytz.UTC):
+                    logging.info(
+                        f"Skipping article from {date} as it's older than source's last update {source.updatedAt}"
+                    )
+                    raise StopIteration
+
+                if LAST_FETCH_DATE > date.date():
+                    logging.info(
+                        f"Skipping article from {date.date()} as it's older than LAST_FETCH_DATE {LAST_FETCH_DATE}"
+                    )
+                    raise StopIteration
+                author_id = author_id if author_id else None
 
                 try:
-                    limit: int | None = None
 
-                    timeout_s: float = 10
-                    iterator = (
-                        InfiniteScrollIterator(
-                            custom_driver=driver,
-                            css_selector=str(load_more_selector),
-                            timeout_s=timeout_s,
-                            limit=limit,
+                    logging.info(f"Creating NewsAdd object with: authorId={author_id}, title={title}, url={url}, sourceId={source.id}")
+                    logging.info(f"Body length: {len(body)}, Post date: {post_date}, Image URL: {image_url}")
+                    news = NewsAdd(
+                        authorId=author_id,
+                        title=title,
+                        url=news_url,
+                        sourceId=source.id,
+                        body=body,
+                        postDate=post_date,
+                        imageUrl=image_url,
+                    )
+                    logging.info("Successfully created NewsAdd object")
+                except:
+                    self.addUpdateSource(
+                        request=SourceRequest(
+                            url=source.url,
+                            containsAfricaContent=(not source.triggerAfrica),
+                            containsAiContent=(not source.triggerAi),
                         )
-                        if next_button_selector is None
-                        else PaginationIterator(
-                            driver=driver,
-                            css_selector=str(next_button_selector),
-                            timeout_s=timeout_s,
-                            limit=limit,
-                        )
                     )
-                    for loaded_content in iterator:
-                        current_url = driver.driver.execute_script("return window.location.href;")
+                    raise Exception("The detail selector are invalid")
 
-                        print(f"Current url: {current_url}")
-
-                        logging.debug("Parsing HTML with BeautifulSoup")
-                        soup = BeautifulSoup(loaded_content, "html.parser")
-
-                        logging.debug(
-                            f"Selecting elements with selector: {selector['title']}"
-                        )
-                        elements = soup.select(selector["title"])
-
-                        logging.debug(f"Found {len(elements)} title elements")
-
-                        logging.debug(
-                            f"Selecting links with selector: {selector['link']}"
-                        )
-                        links = soup.select(selector["link"])
-
-                        logging.debug(f"Found {len(links)} link elements")
-
-                        logging.debug(f"Processing {len(elements)} elements")
-
-                        for i, element in enumerate(elements):
-                            logging.debug(f"Processing element {i+1}/{len(elements)}")
-
-                            title = element.get_text().strip()
-
-                            should_add = is_valid_source(
-                                title,
-                                trigger_africa=trigger_africa,
-                                trigger_ai=trigger_ai,
-                            )
-
-                            logging.debug(f"Title: {title}")
-                            logging.debug(f"Should add this result: {should_add}")
-
-                            if should_add:
-                                news_url = links[i].get("href")
-
-                                if news_url:
-                                    news_url = CustomSoup.resolve_relative_url(url, news_url)
-
-                                # Skip entries with no link (can't fetch additional data)
-                                if news_url is None:
-                                    logging.debug("Skipping - link is None")
-                                    continue
-
-                                logging.debug(
-                                    f"Fetching author information from: {news_url}"
-                                )
-
-                                news_url = CustomSoup.resolve_relative_url(
-                                    url, news_url
-                                )
-
-                                driver.get(news_url)
-                                news_page = driver.get_html()
-                                soup = CustomSoup(news_page)
-
-                                author: AuthorRequest | None = None
-                                if author_selector is not None:
-                                    logging.debug(
-                                        f"Looking for author with selector: {author_selector}"
-                                    )
-                                    author_name = soup.select_text(
-                                        author_selector["name"]
-                                    )
-                                    author_url = soup.select_url(
-                                        base_url=url,
-                                        css_selector=author_selector["link"],
-                                    )
-
-                                    author = AuthorRequest(
-                                        name=author_name,
-                                        url=author_url,
-                                    )
-                                    logging.debug(f"Found author: {author.name}")
-
-                                    author_id = author_repository.get_or_create_author(
-                                        author
-                                    )
-
-                                body = soup.select_text(selector["body"])
-                                post_date = soup.select_text(selector["post_date"])
-                                image_url = soup.select_url(
-                                    css_selector=selector["image_url"],
-                                    base_url=url,
-                                )
-
-                                if not (body and post_date):
-                                    self.addUpdateSource(
-                                        request=SourceRequest(
-                                            url=source.url,
-                                            containsAfricaContent=(
-                                                not source.triggerAfrica
-                                            ),
-                                            containsAiContent=(not source.triggerAi),
-                                        )
-                                    )
-                                    raise Exception(
-                                        "The Body selector and the post selector are outdated valid"
-                                    )
-                                date_formats = [
-                                    "%Y-%m-%dT%H:%M:%S",  # ISO 8601
-                                    "%Y-%m-%d %H:%M:%S",  # Common datetime format
-                                    "%Y/%m/%d %H:%M:%S",  # Slash separated
-                                    "%d/%m/%Y %H:%M:%S",  # European format
-                                    "%m/%d/%Y %H:%M:%S",  # US format
-                                    "%Y-%m-%d",  # Date only
-                                    "%d %b %Y",  # 01 Jan 2023
-                                    "%b %d, %Y",  # Jan 01, 2023
-                                    "%d %B %Y",  # 01 January 2023
-                                    "%B %d, %Y",  # January 01, 2023
-                                ]
-                                date_prefixes = [
-                                    "Posted on",
-                                    "Posted",
-                                    "Published on",
-                                    "Published",
-                                    "Last updated on",
-                                    "Last updated",
-                                    "Updated on",
-                                    "Updated",
-                                    "Created on",
-                                    "Created",
-                                    "Date:",
-                                    "Time:",
-                                    ":",
-                                ]
-                                for prefix in date_prefixes:
-                                    post_date = post_date.replace(prefix, "").strip()
-
-                                date = None
-                                for fmt in date_formats:
-                                    try:
-                                        date = datetime.datetime.strptime(
-                                            post_date, fmt
-                                        )
-                                        break
-                                    except ValueError:
-                                        continue
-
-                                if date is None:
-                                    raise ValueError(
-                                        f"Could not parse date: {post_date}"
-                                    )
-                                if (
-                                    source.updatedAt
-                                    and datetime.datetime.fromisoformat(
-                                        source.updatedAt
-                                    )
-                                    > date
-                                ):
-                                    logging.debug(
-                                        f"Skipping article from {date} as it's older than source's last update {source.updatedAt}"
-                                    )
-                                    break
-
-                                if LAST_FETCH_DATE > date.date():
-                                    logging.debug(
-                                        f"Skipping article from {date.date()} as it's older than LAST_FETCH_DATE {LAST_FETCH_DATE}"
-                                    )
-                                    break
-                                author_id = author_id if author_id else None
-
-                                news = NewsAdd(
-                                    authorId=author_id,
-                                    title=title,
-                                    url=url,
-                                    sourceId=source.id,
-                                    body=body,
-                                    postDate=post_date,
-                                    imageUrl=image_url,
-                                )
-                                try:
-                                    news_repository.add_news(news)
-                                except Exception as e:
-                                    print(e)
-                                    continue
-
-                                logging.debug(f"Adding result: {title}")
-                                
-                        driver.get(current_url)
-
-                    source_repository.update_at(
-                        source.id,
-                        datetime.datetime.now(),
-                    )
-
-                    break
-
-                except ParserRejectedMarkup as e:
-                    logging.error(
-                        f"HTML parsing error scraping source {source.url}: {str(e)}",
-                        exc_info=True,
-                    )
-                    continue
-                except KeyError as e:
-                    logging.error(
-                        f"Missing selector key error scraping source {source.url}: {str(e)}",
-                        exc_info=True,
-                    )
-                    continue
-                except AttributeError as e:
-                    logging.error(
-                        f"Attribute access error scraping source {source.url}: {str(e)}",
-                        exc_info=True,
-                    )
-                    continue
-                except ValueError as e:
-                    logging.error(
-                        f"Value error scraping source {source.url}: {str(e)}",
-                        exc_info=True,
-                    )
-                    continue
+                try:
+                    news_repository.add_news(news)
                 except Exception as e:
-                    logging.error(
-                        f"Unexpected error scraping source {source.url}: {str(e)}",
-                        exc_info=True,
-                    )
+                    print(e)
                     continue
 
-        return ScrapeResponse()
+                logging.info(f"Adding result: {title}")
+
+    def _get_create_author(
+        self,
+        author_repository: AuthorRepository,
+        url: str,
+        trigger_ai: bool,
+        trigger_africa: bool,
+        author_selector: AuthorDict |None,
+        soup: CustomSoup,
+    ) -> int:
+        author: Author | None = None
+        if author_selector is not None:
+            logging.info(f"Looking for author with selector: {author_selector}")
+            author_name = soup.select_text(author_selector["name"])
+            author_url = soup.select_url(
+                base_url=url,
+                css_selector=author_selector["link"],
+            )
+
+            image_url = soup.select_url(
+                base_url=url,
+                css_selector=author_selector["image_url"],
+            )
+
+            try:
+                if Checker.is_date(author_name) or (author_name and not author_name.strip()):
+                    raise ValueError(f"Invalid author name: {author_name}")
+                if author_url and not Checker.is_valid_url(author_url):
+                    raise ValueError(f"Invalid author URL: {author_url}")
+                if image_url and not Checker.is_valid_url(image_url):
+                    raise ValueError(f"Invalid image URL: {image_url}")
+
+                author = Author(
+                    name=author_name,
+                    url=author_url,
+                    image_url=image_url,
+                )
+
+                logging.info(f"Found author: {author.name}")
+
+                author_id = author_repository.get_or_create_author(author)
+            except:
+                self.addUpdateSource(
+                    SourceUpdate(
+                        url=url,
+                        containsAfricaContent=(not trigger_africa),
+                        containsAiContent=(not trigger_ai),
+                    )
+                )
+                raise Exception(
+                    "The Body selector and the post selector are outdated valid"
+                )
+        else:
+            author_id = author_repository.get_or_create_author(Author(name=None, url=None, image_url=None))
+
+        return author_id
 
     def addSource(
         self,
@@ -596,7 +725,7 @@ class SourceService(SourceServiceServicer):
 
     def addUpdateSource(
         self,
-        request: SourceRequest,
+        request: SourceRequest | SourceUpdate,
     ):
         url = request.url
 
