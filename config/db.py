@@ -4,9 +4,9 @@ from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 import logging
 
-from repositories.author_repository import AuthorRepository
-from repositories.news_repository import NewsRepository
-from repositories.source_repository import SourceRepository
+from Repositories.author_repository import AuthorRepository
+from Repositories.news_repository import NewsRepository
+from Repositories.source_repository import SourceRepository
 
 
 class DatabaseConfig:

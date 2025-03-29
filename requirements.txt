@@ -15,3 +15,4 @@ grpcio-health-checking
 protobuf 
 mypy-protobuf 
 types-protobuf 
+numpy
