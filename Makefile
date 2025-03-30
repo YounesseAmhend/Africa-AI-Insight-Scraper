@@ -30,3 +30,6 @@ run-build:
 
 delete-build:
 	docker rmi -f scraper
+
+docker:
+	make delete-build && make build && make run-build

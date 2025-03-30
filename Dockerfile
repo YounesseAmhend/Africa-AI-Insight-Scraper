@@ -1,38 +1,35 @@
-FROM python:3.12
+FROM debian:bookworm-slim as edge_installer
 
-# Set the working directory
-WORKDIR /ai-insight-scraper
-
-# Copy the requirements file and install Python dependencies
-COPY requirements.txt .
-
-ENV TZ=UTC
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Ensure system dependencies for msedgedriver are installed
-RUN apt-get update && apt-get install -y \
-    libx11-6 \
-    libglib2.0-0 \
-    libnss3 \
-    libgconf-2-4 \
-    libfontconfig1 \
-    libasound2 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Microsoft Edge browser
-RUN curl -sSL https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" | tee /etc/apt/sources.list.d/microsoft-edge.list && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    wget \
+    gnupg \
+    ca-certificates && \
+    wget -q -O - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft-edge.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge/ stable main" > /etc/apt/sources.list.d/microsoft-edge.list && \
     apt-get update && \
-    apt-get install -y microsoft-edge-stable && \
+    apt-get install -y --no-install-recommends microsoft-edge-stable && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the rest of the application files
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Copy only the essential Edge files
+COPY --from=edge_installer /opt/microsoft/msedge /opt/microsoft/msedge
+COPY --from=edge_installer /usr/bin/microsoft-edge /usr/bin/
+COPY --from=edge_installer /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
 
-# Expose the necessary port
-EXPOSE 50051
+RUN useradd -m scraper && \
+    chown -R scraper:scraper /app
+USER scraper
 
-# Run the application
+EXPOSE 50051
 CMD ["python", "app.py"]

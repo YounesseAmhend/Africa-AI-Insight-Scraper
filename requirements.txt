@@ -7,7 +7,7 @@ grpcio
 google-generativeai
 grpc-stubs
 grpcio-tools
-psycopg2
+psycopg2-binary
 grpcio-reflection 
 grpcio-health-checking 
 protobuf 

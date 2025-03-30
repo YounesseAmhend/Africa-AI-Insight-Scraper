@@ -1,6 +1,5 @@
 from config.db import DatabaseConfig
 from models.author import Author
-from protos.author_pb2 import AuthorRequest
 
 
 class AuthorRepository:

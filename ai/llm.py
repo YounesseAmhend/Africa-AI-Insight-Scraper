@@ -1,4 +1,3 @@
-# Import necessary libraries
 from dotenv import load_dotenv
 import os
 from google.genai import Client
@@ -65,9 +64,13 @@ class Llm:
             cls._instance = super(Llm, cls).__new__(cls)
             # Initialize the instance only once
             load_dotenv()
-            cls._instance._api_key = os.getenv("API_KEY")  # Private API key for Gemini
+            api_key = os.getenv("API_KEY")
+            cls._instance._api_key = api_key  # Private API key for Gemini
             if DEBUG_MODE:
                 logging.info(os.getenv("API_KEY"))
+            if api_key:
+                raise Exception("API key not found in environment variables")
+            
             cls._instance.client = Client(api_key=cls._instance._api_key)
 
             # Configuration for content generation
