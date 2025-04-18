@@ -4,10 +4,14 @@ from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 import logging
 
+<<<<<<< HEAD
 from Repositories.author_repository import AuthorRepository
 from Repositories.news_repository import NewsRepository
 from Repositories.source_repository import SourceRepository
 
+=======
+from constants import AUTHORS_TABLE_SCHEMA, NEWS_TABLE_SCHEMA, SOURCE_TABLE_SCHEMA
+>>>>>>> 5ada178a7b2747e7697a58e908055804bc3da244
 
 class DatabaseConfig:
     """
@@ -20,21 +24,16 @@ class DatabaseConfig:
         if not cls._instance:
             cls._instance = super(DatabaseConfig, cls).__new__(cls)
             cls._instance._initialized = False
+            # Move create_tables to after initialization
         return cls._instance
 
     def __init__(self, min_connections: int = 1, max_connections: int = 10):
         """
         Initialize database connection pool
-
-        :param host: Database host
-        :param database: Database name
-        :param user: Database username
-        :param password: Database password
-        :param port: Database port
-        :param sslmode: SSL mode for connection
-        :param min_connections: Minimum connections in pool
-        :param max_connections: Maximum connections in pool
         """
+        if self._initialized:
+            return
+
         host: str | None = os.getenv("DB_HOST")
         database: str | None = os.getenv("DB_NAME")
         user: str | None = os.getenv("DB_USER")
@@ -48,8 +47,6 @@ class DatabaseConfig:
             )
 
         port: int = int(port_str)  # type: ignore
-        if self._initialized:
-            return
 
         self.connection_params = {
             "host": host,
@@ -70,34 +67,34 @@ class DatabaseConfig:
             raise
 
         self._initialized = True
+        # Now that we're initialized, create tables
+        self.create_tables()
 
     @contextmanager
     def get_connection(self):
-        """
-        Context manager for database connections
-
-        :yield: Database connection
-        """
-        conn = None
+        if not hasattr(self, 'connection_pool'):
+            raise AttributeError("Connection pool not initialized")
+            
+        conn = self.connection_pool.getconn()
+        logging.debug(f"Acquired connection: {conn}")
         try:
-            conn = self.connection_pool.getconn()
             yield conn
-        except Exception as e:
-            logging.error(f"Database connection error: {e}")
-            raise
         finally:
-            if conn:
-                self.connection_pool.putconn(conn)
+            logging.debug(f"Releasing connection: {conn}")
+            self.connection_pool.putconn(conn)
+
 
     def create_tables(self):
         """
         Create necessary tables if they don't exist
         """
+        if not hasattr(self, 'connection_pool'):
+            return
 
         TABLES: list[str] = [
-            SourceRepository.TABLE_SCHEMA,
-            AuthorRepository.TABLE_SCHEMA,
-            NewsRepository.TABLE_SCHEMA,
+            SOURCE_TABLE_SCHEMA,
+            AUTHORS_TABLE_SCHEMA,
+            NEWS_TABLE_SCHEMA,
         ]
         try:
             with self.get_connection() as conn:

@@ -19,13 +19,13 @@ class InfiniteScrollIterator:
         custom_driver: CustomDriverProtocol,
         css_selector: str | None,
         timeout_s: float,
-        max_loads: int = 20,
+        limit: int | None = 20,
     ):
 
         self.wait = WebDriverWait(custom_driver.driver, timeout=timeout_s)
         self.custom_driver = custom_driver
         self.css_selector = css_selector
-        self.max_loads = max_loads
+        self.max_loads = limit
         self.current_load = 0
         self.html: str = ""
 
@@ -33,7 +33,7 @@ class InfiniteScrollIterator:
         return self
 
     def __next__(self) -> str:
-        if self.current_load >= self.max_loads:
+        if self.max_loads and self.current_load >= self.max_loads:
             raise StopIteration
 
         if self.current_load == 0:

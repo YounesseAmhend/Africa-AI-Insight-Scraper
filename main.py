@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 from typing import Callable
@@ -12,13 +13,19 @@ from ai.llm import Llm
 from constants import *
 from dtypes.news_dict import NewsDict
 from dtypes.selector import Selector
-from rpc.protos.source_pb2 import SourceRequest
+from protos import source_pb2_grpc
+from protos.news_pb2 import NewsAddRequest
 from utils.infinite_scrolling_iterator import InfiniteScrollIterator
 from utils.pagination_iterator import PaginationIterator
 from utils.utils import contains_triggers
 from dtypes.author import Author
 from settings import *
 from utils.custom_driver import CustomDriver
+from concurrent.futures import ThreadPoolExecutor
+import grpc
+from services.source_service import SourceService
+from settings import GRPC_ADDRESS
+import logging
 from utils.trigger_file import TriggerFile
 from time import sleep
 import time
@@ -77,71 +84,25 @@ HEADERS = {
     + "Chrome/91.0.4472.124 Safari/537.36"
 }
 
-
-def add_source(source: dict, max_retries: int = 3):
-    # * this is tempory we will use grpc so this will not make sence
-    """
-    Add a new source with selector storage
-
-    :param source: Source dictionary
-    :param scrape_func: Function to scrape the source
-    :param max_retries: Maximum number of scraping retries
-    :return: Scraping result with additional information
-    """
-    url = source["url"]
-    trigger_africa = source["trigger_africa"]
-    trigger_ai = source["trigger_ai"]
-
-    start_time = time.time()
-
-    result = try_until(
-        lambda: scrape_news(url),
-        max_retries=max_retries,
-    )
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-
-    logging.info(f"Scraping completed in {elapsed_time:.2f} seconds")
-
-    selector = result["selector"]  # type: ignore
-
-    if selector:
-        db_config = DatabaseConfig()
-        db_config.create_tables()  # Ensure tables exist
-
-        source_service = SourceRepository(db_config)
-
-        try:
-            # Store source with selector
-            record_id = source_service.add_source(
-                selector=selector,
-                source=SourceRequest(
-                    url=url,
-                    containsAiContent=(not trigger_ai),
-                    containsAfricaContent=(not trigger_africa),
-                ),
-            )
-
-            result["db_record_id"] = record_id  # type: ignore
-
-        except Exception as e:
-            logging.error(f"Failed to store source: {e}")
-
-    return result
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-@app.get("/add")
-def add_source_route():
+def serve() -> None:
+    server = grpc.server(ThreadPoolExecutor(max_workers=10))
+    source_pb2_grpc.add_SourceServiceServicer_to_server(SourceService(), server)
+    server.add_insecure_port(GRPC_ADDRESS)
+    server.start()
+    server.wait_for_termination()
 
-    source = {
-        "url": "https://www.up.ac.za/news",
-        "trigger_africa": False,
-        "trigger_ai": True,
-    }
-    # there could be some improvements here ???? maybe add the scrape_news here and pass it as parm ???
-    # * Nah that is really a bad idea
-    return add_source(source)
+
+if __name__ == "__main__":
+    try:
+        logger.info("Starting gRPC server...")
+        serve()
+    except Exception as e:
+        logger.error(f"Server crashed: {str(e)}", exc_info=True)
 
 
 def correct_url(url: str) -> str:
@@ -319,7 +280,6 @@ def get_selector(
     driver = CustomDriver()
 
     driver.get(url)
-    sleep(3)  # Wait for JS to load
 
     html_content = driver.get_html()
     driver.quit()
@@ -393,7 +353,7 @@ def handle_source(source: SourceDict):
                 custom_driver=driver,
                 css_selector=str(load_more_selector),
                 timeout_s=10,
-                max_loads=max_loads,
+                limit=max_loads,
             )
             if next_button_selector is None
             else PaginationIterator(
@@ -428,7 +388,8 @@ def get_articles(
     trigger_africa: bool,
     selector: dict,
     content: str,
-) -> list[dict]:
+) -> list[NewsAddRequest]:
+
     logging.debug("Parsing HTML with BeautifulSoup")
     soup = BeautifulSoup(content, "html.parser")
 
@@ -442,7 +403,7 @@ def get_articles(
 
     logging.debug(f"Found {len(links)} link elements")
 
-    articles = []
+    articles: list[NewsAddRequest] = []
 
     logging.debug(f"Processing {len(elements)} elements")
 
@@ -530,14 +491,6 @@ def get_articles(
             #     logging.debug(f"Found author: {author['name']}")
 
             logging.debug(f"Adding result: {title}")
-
-            articles.append(
-                {
-                    "title": title,
-                    "link": link,
-                    "author": author,
-                }
-            )
 
     logging.debug(f"Adding {len(articles)} results from {url} to all_results")
     return articles

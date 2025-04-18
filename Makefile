@@ -9,7 +9,10 @@ git:
 	git push
 
 gen-grpc:
-	python -m grpc_tools.protoc -I. --python_out=./rpc --grpc_python_out=./rpc --pyi_out=./rpc $(shell find protos -name "*.proto")
+	python -m grpc_tools.protoc -I. \
+		--python_out=. --grpc_python_out=. \
+		--pyi_out=. \
+		$(shell find protos -name "*.proto")  
 
 client:
 	python grpc_client.py

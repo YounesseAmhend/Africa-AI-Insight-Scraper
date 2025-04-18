@@ -2,14 +2,15 @@
 from dotenv import load_dotenv
 import os
 from google.genai import Client
+
 from google.genai.types import GenerateContentConfig, Content, Part
 from google.generativeai.generative_models import GenerativeModel
+import google.generativeai.client as genai
 from ai.prompt import Prompt
 from constants import *
 import logging
 import re
-from settings import GEMINI_MODEL, MAX_TOKENS
-
+from settings import DEBUG_MODE, GEMINI_MODEL, MAX_TOKENS
 
 
 class LlmResponse:
@@ -65,6 +66,8 @@ class Llm:
             # Initialize the instance only once
             load_dotenv()
             cls._instance._api_key = os.getenv("API_KEY")  # Private API key for Gemini
+            if DEBUG_MODE:
+                logging.info(os.getenv("API_KEY"))
             cls._instance.client = Client(api_key=cls._instance._api_key)
 
             # Configuration for content generation
@@ -104,8 +107,8 @@ class Llm:
                 ],
             ),
         ]
-        model = GenerativeModel(f"models/{GEMINI_MODEL}")
-
+        genai.configure(api_key=self._api_key)
+        model = GenerativeModel(f"models/{GEMINI_MODEL}",)
         logging.info("Total tokens: ", model.count_tokens(prompt.text))
 
         response = self.client.models.generate_content_stream(

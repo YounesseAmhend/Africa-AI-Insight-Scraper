@@ -1,10 +1,7 @@
 import datetime
+import logging
 from config.db import DatabaseConfig
-from rpc.protos.news_pb2 import NewsAddRequest
-
-
-
-
+from models.news import NewsAdd
 
 
 class NewsRepository:
@@ -12,34 +9,19 @@ class NewsRepository:
     Service for managing source-related database operations
     """
 
-    TABLE_SCHEMA = """
-    CREATE TABLE IF NOT EXISTS news (
-        id SERIAL PRIMARY KEY,
-        sourceId INTEGER NOT NULL REFERENCES sources(id),
-        title TEXT NOT NULL,
-        url TEXT UNIQUE NOT NULL,
-        authorId INTEGER REFERENCES authors(id),
-        body TEXT NOT NULL,
-        postDate TIMESTAMP WITH TIME ZONE,
-        imageUrl TEXT,
-        createdAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
-    """
-
     def __init__(
         self,
-        db_config: DatabaseConfig,
     ) -> None:
         """
         Initialize SourceService
 
         :param db_config: DatabaseConfig instance
         """
-        self.db_config = db_config
+        self.db_config = DatabaseConfig()
 
     def add_news(
         self,
-        source_id: int,
-        data: NewsAddRequest,
+        data: NewsAdd,
     ) -> None:
         """
         Add a new news article to the database
@@ -62,19 +44,58 @@ class NewsRepository:
             ON CONFLICT (url) DO NOTHING
         """
 
+        date_formats = [
+            "%Y-%m-%dT%H:%M:%S",  # ISO 8601
+            "%Y-%m-%d %H:%M:%S",  # Common datetime format
+            "%Y/%m/%d %H:%M:%S",  # Slash separated
+            "%d/%m/%Y %H:%M:%S",  # European format
+            "%m/%d/%Y %H:%M:%S",  # US format
+            "%Y-%m-%d",  # Date only
+            "%d %b %Y",  # 01 Jan 2023
+            "%b %d, %Y",  # Jan 01, 2023
+            "%d %B %Y",  # 01 January 2023
+            "%B %d, %Y",  # January 01, 2023
+        ]
+        date_prefixes = [
+            "Posted on",
+            "Posted",
+            "Published on",
+            "Published",
+            "Last updated on",
+            "Last updated",
+            "Updated on",
+            "Updated",
+            "Created on",
+            "Created",
+            "Date:",
+            "Time:",
+            ":",
+        ]
+        for prefix in date_prefixes:
+            post_date = data.postDate.replace(prefix, "").strip()
+
+        date = None
+        for fmt in date_formats:
+            try:
+                date = datetime.datetime.strptime(
+                    post_date, fmt
+                )
+                break
+            except ValueError:
+                continue
+
         # Convert post_date from string to datetime if it exists
-        post_date = (
-            datetime.datetime.fromisoformat(data.postDate) if data.postDate else None
-        )
+        if date is None:
+            logging.error(f"Could not parse date: {post_date}")
 
         params = (
-            source_id,
+            data.sourceId,
             data.title,
             data.url,
-            data.authorId if data.HasField("authorId") else None,
+            data.authorId,
             data.body,
-            post_date,
-            data.imageUrl if data.HasField("imageUrl") else None,
+            date,
+            data.imageUrl,
         )
 
         with self.db_config.get_connection() as conn:

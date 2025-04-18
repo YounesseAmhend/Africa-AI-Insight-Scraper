@@ -1,4 +1,4 @@
-from ai.llm import logger
+import logging
 from utils.utils import read_file
 
 
@@ -38,18 +38,18 @@ class Prompt:
         Returns:
             str: The final prompt string combining the template and cleaned HTML content
         """
-        logger.info(
+        logging.info(
             f"Creating prompt from HTML content using template: {self.template_path}"
         )
         cleaned_html = self.clean_html_content(self.html_content)
 
         self.html_content = cleaned_html
 
-        logger.info(f"Inserting cleaned HTML into template: {self.template_path}")
+        logging.info(f"Inserting cleaned HTML into template: {self.template_path}")
 
         result = self.insert_html_into_template()
 
-        logger.info(f"Final prompt length: {len(result)} characters")
+        logging.info(f"Final prompt length: {len(result)} characters")
 
         return result
 
@@ -70,7 +70,7 @@ class Prompt:
         body_match = body_pattern.search(html_content)
 
         if not body_match:
-            logger.error("No <body> tags found in the HTML content")
+            logging.error("No <body> tags found in the HTML content")
             raise ValueError("No <body> tags found in the HTML content")
 
         body_content = body_match.group(1)
@@ -93,7 +93,7 @@ class Prompt:
             before_length = len(cleaned_html)
             cleaned_html = compiled_pattern.sub("", cleaned_html)
             after_length = len(cleaned_html)
-            logger.debug(
+            logging.debug(
                 f"Removed {description}, reduced content by {before_length - after_length} characters"
             )
 
@@ -109,7 +109,7 @@ class Prompt:
             (original_length - cleaned_length) / original_length
         ) * 100
 
-        logger.info(
+        logging.info(
             f"HTML cleaning completed. Removed {percentage_removed:.2f}% of original content. "
             f"Final content length: {cleaned_length} characters"
         )
@@ -137,7 +137,7 @@ class Prompt:
             PLACEHOLDER = "[HTML CODE HERE]"
 
             if PLACEHOLDER not in template_content:
-                logger.error(
+                logging.error(
                     f"Placeholder '{PLACEHOLDER}' not found in template file: {self.template_path}"
                 )
                 raise ValueError(
@@ -146,7 +146,7 @@ class Prompt:
 
             return template_content.replace(PLACEHOLDER, self.html_content)
         except FileNotFoundError as e:
-            logger.error(f"Template file not found: {self.template_path}")
+            logging.error(f"Template file not found: {self.template_path}")
             raise FileNotFoundError(
                 f"Template file not found: {self.template_path}"
             ) from e

@@ -1,5 +1,6 @@
 from config.db import DatabaseConfig
-from rpc.protos.author_pb2 import AuthorResponse
+from protos.author_pb2 import AuthorRequest
+
 
 class AuthorRepository:
     TABLE_SCHEMA = """
@@ -11,15 +12,17 @@ class AuthorRepository:
         )
         """
 
-    def __init__(self, db_config: DatabaseConfig) -> None:
+    def __init__(
+        self,
+    ) -> None:
         """
         Initialize AuthorRepository
 
         :param db_config: DatabaseConfig instance
         """
-        self.db_config = db_config
+        self.db_config = DatabaseConfig()
 
-    def get_or_create_author(self, author: AuthorResponse) -> int:
+    def get_or_create_author(self, author: AuthorRequest) -> int:
         """
         Get or create an author in the database
 
@@ -27,6 +30,9 @@ class AuthorRepository:
         :param url: Author's URL (optional)
         :return: ID of the existing or newly created author
         """
+        if author.name is None:
+            author.name = "Unknown"
+
         # First try to get existing author
         query = "SELECT id FROM authors WHERE name = %s"
         with self.db_config.get_connection() as conn:
@@ -35,7 +41,7 @@ class AuthorRepository:
                 result = cursor.fetchone()
                 if result:
                     return result[0]
-                
+
                 # If not found, create new author
                 query = """
                     INSERT INTO authors (name, url)

@@ -18,11 +18,14 @@ from settings import DEBUG_MODE
 from utils.infinite_scrolling_iterator import InfiniteScrollIterator
 from utils.pagination_iterator import PaginationIterator
 
+
 class CustomDriver:
     DEFAULT_TIMEOUT_S = 2.5
 
     def __init__(self) -> None:
-        EDGE_DRIVER_PATH = "bin/msedgedriver.exe" if os.name == "nt" else "bin/msedgedriver"
+        EDGE_DRIVER_PATH = (
+            "bin/msedgedriver.exe" if os.name == "nt" else "bin/msedgedriver"
+        )
         self.service = Service(EDGE_DRIVER_PATH)
         self.options = webdriver.EdgeOptions()
 
@@ -32,7 +35,7 @@ class CustomDriver:
         self.options.add_argument("--disable-blink-features=AutomationControlled")
         self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
         self.options.add_experimental_option("useAutomationExtension", False)
-        
+
         # Add arguments to improve performance and stability
         self.options.add_argument("--disable-extensions")
         self.options.add_argument("--disable-gpu")
@@ -67,7 +70,7 @@ class CustomDriver:
         self.actions = ActionChains(self.driver)
 
     def get(self, url: str) -> None:
-        self.driver.get(url)
+        self.driver.execute_script(f"window.location.href = '{url}'")
 
     def handle_infinite_scroll(
         self,
@@ -104,7 +107,9 @@ class CustomDriver:
 
         last_height = self.driver.execute_script("return document.body.scrollHeight")
         while True:
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            self.driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);"
+            )
             sleep(0.5)
             new_height = self.driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
@@ -114,8 +119,12 @@ class CustomDriver:
         sleep(1)
 
         try:
-            next_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
-            self.driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
+            next_button = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector))
+            )
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView(true);", next_button
+            )
             sleep(0.5)
 
             try:
@@ -143,7 +152,19 @@ class CustomDriver:
             raise StopIteration
 
     def get_html(self) -> str:
-        return self.driver.page_source
+        try:
+            logging.info("Waiting for the Page fully loaded, retrieving HTML source")
+
+            self.wait.until(
+                lambda driver: driver.execute_script("return document.readyState")
+                == "complete",
+            )
+            logging.info("Page fully loaded, retrieving HTML source")
+            return self.driver.page_source
+        except Exception as e:
+            logging.error(f"Error while getting page HTML: {str(e)}")
+            logging.warning("Returning current page source despite error")
+            return self.driver.page_source
 
     def __del__(self):
         try:
