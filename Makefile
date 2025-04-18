@@ -3,6 +3,9 @@ main:
 install:
 	pip install -r requirements.txt
 
+submodule:
+	git submodule update --recursive --remote
+
 git:
 	git add .
 	git commit -m "$(m)"
