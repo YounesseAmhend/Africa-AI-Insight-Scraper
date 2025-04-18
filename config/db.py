@@ -1,17 +1,9 @@
 import os
-from numpy import source
 from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 import logging
 
-<<<<<<< HEAD
-from Repositories.author_repository import AuthorRepository
-from Repositories.news_repository import NewsRepository
-from Repositories.source_repository import SourceRepository
-
-=======
 from constants import AUTHORS_TABLE_SCHEMA, NEWS_TABLE_SCHEMA, SOURCE_TABLE_SCHEMA
->>>>>>> 5ada178a7b2747e7697a58e908055804bc3da244
 
 class DatabaseConfig:
     """

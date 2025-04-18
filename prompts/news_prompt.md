@@ -84,7 +84,6 @@ Ensure the output is a Python dictionary in the exact format shown above, with n
 }
 ```
 
-
 ### HTML Code for Analysis
 
 ```html

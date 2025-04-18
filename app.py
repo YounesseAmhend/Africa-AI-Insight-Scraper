@@ -2,11 +2,15 @@ from concurrent.futures import ThreadPoolExecutor
 import grpc
 from protos import source_pb2_grpc
 from services.source_service import SourceService
-from settings import GRPC_ADDRESS
+from settings import PORT
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.NOTSET,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("scraper.log"), logging.StreamHandler()],
+)
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +18,7 @@ def serve() -> None:
 
     server = grpc.server(ThreadPoolExecutor(max_workers=10))
     source_pb2_grpc.add_SourceServiceServicer_to_server(SourceService(), server)
-    server.add_insecure_port(GRPC_ADDRESS)
+    server.add_insecure_port(f"[::]:{PORT}")
     server.start()
     server.wait_for_termination()
 

@@ -17,3 +17,14 @@ class Source:
         self.triggerAi = triggerAi
         self.createdAt = createdAt
         self.updatedAt = updateAt
+
+class SourceUpdate:
+    def __init__(
+        self,
+        url: str,
+        containsAiContent: bool,
+        containsAfricaContent: bool,
+    ):
+        self.url = url
+        self.containsAiContent = containsAiContent
+        self.containsAfricaContent = containsAfricaContent

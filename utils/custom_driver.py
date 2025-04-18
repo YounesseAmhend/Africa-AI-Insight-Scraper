@@ -20,7 +20,7 @@ from utils.pagination_iterator import PaginationIterator
 
 
 class CustomDriver:
-    DEFAULT_TIMEOUT_S = 2.5
+    DEFAULT_TIMEOUT_S = 10
 
     def __init__(self) -> None:
         EDGE_DRIVER_PATH = (
@@ -70,7 +70,7 @@ class CustomDriver:
         self.actions = ActionChains(self.driver)
 
     def get(self, url: str) -> None:
-        self.driver.execute_script(f"window.location.href = '{url}'")
+        self.driver.get(url)
 
     def handle_infinite_scroll(
         self,

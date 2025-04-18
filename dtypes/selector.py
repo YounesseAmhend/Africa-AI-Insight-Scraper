@@ -1,5 +1,5 @@
 from typing import TypedDict
-from .author import Author
+from .author_dict import AuthorDict
 
 
 class Selector(TypedDict):
@@ -7,7 +7,7 @@ class Selector(TypedDict):
     link: str
     load_more_button: str | None  # Some website don't have it
     next_button: str | None
-    author: Author | None
+    author: AuthorDict | None
     body: str
     event_date: str | None
     post_date: str | None
@@ -16,7 +16,7 @@ class Selector(TypedDict):
 
 # this is just for the ai to convince him
 class PageSelector(TypedDict):
-    author: Author | None
+    author: AuthorDict | None
     body: str
     event_date: str | None
     post_date: str | None

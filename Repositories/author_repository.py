@@ -1,4 +1,5 @@
 from config.db import DatabaseConfig
+from models.author import Author
 from protos.author_pb2 import AuthorRequest
 
 
@@ -22,7 +23,7 @@ class AuthorRepository:
         """
         self.db_config = DatabaseConfig()
 
-    def get_or_create_author(self, author: AuthorRequest) -> int:
+    def get_or_create_author(self, author: Author) -> int:
         """
         Get or create an author in the database
 

@@ -3,7 +3,7 @@ from protos import source_pb2_grpc
 from protos import source_pb2
 
 from protos.source_pb2 import ScrapeRequest, SourceRequest
-from settings import GRPC_ADDRESS
+from settings import PORT
 import logging
 
 # Configure logging
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class SourceClient:
     def __init__(self):
-        self.channel = grpc.insecure_channel(GRPC_ADDRESS)
+        self.channel = grpc.insecure_channel(f"localhost:{PORT}")
         self.stub = source_pb2_grpc.SourceServiceStub(self.channel)
 
     def add_source(self, url: str, contains_ai: bool, contains_africa: bool):
