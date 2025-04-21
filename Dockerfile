@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.12-alpine
 
 # Set the working directory
 WORKDIR /ai-insight-scraper
