@@ -1,5 +1,6 @@
 import datetime
 import logging
+import threading
 import time
 from typing import Callable
 
@@ -353,6 +354,11 @@ class SourceService(SourceServiceServicer):
         context: ServicerContext,
     ) -> ScrapeResponse:
 
+        thread = threading.Thread(target=self._scrape)
+        thread.start()
+        return ScrapeResponse()
+
+    def _scrape(self):
         author_repository = AuthorRepository()
         source_repository = SourceRepository()
         news_repository = NewsRepository()
@@ -362,7 +368,6 @@ class SourceService(SourceServiceServicer):
         driver = CustomDriver()
 
         for source in sources:
-
             self._handle_source(
                 author_repository,
                 source_repository,
@@ -372,8 +377,6 @@ class SourceService(SourceServiceServicer):
             )
 
         driver.quit()
-        return ScrapeResponse()
-
     def _handle_source(
         self,
         author_repository: AuthorRepository,
