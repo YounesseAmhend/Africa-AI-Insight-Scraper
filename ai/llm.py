@@ -68,7 +68,8 @@ class Llm:
             cls._instance._api_key = api_key  # Private API key for Gemini
             if DEBUG_MODE:
                 logging.info(os.getenv("API_KEY"))
-            if api_key:
+                
+            if api_key is None:
                 raise Exception("API key not found in environment variables")
             
             cls._instance.client = Client(api_key=cls._instance._api_key)

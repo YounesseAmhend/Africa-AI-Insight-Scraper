@@ -1,6 +1,8 @@
 import logging
-import os, sys
+import os
+import sys
 from time import sleep
+
 from selenium import webdriver
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
@@ -14,6 +16,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
 from settings import DEBUG_MODE
 from utils.infinite_scrolling_iterator import InfiniteScrollIterator
 from utils.pagination_iterator import PaginationIterator
@@ -32,6 +35,8 @@ class CustomDriver:
         if not DEBUG_MODE:
             self.options.add_argument("--headless")
 
+
+        self.options.add_argument("--incognito")
         self.options.add_argument("--disable-blink-features=AutomationControlled")
         self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
         self.options.add_experimental_option("useAutomationExtension", False)
@@ -169,8 +174,12 @@ class CustomDriver:
     def __del__(self):
         try:
             self.driver.quit()
+            # Cleanup the temporary user data directory
+       
         except Exception as e:
             print(f"Error during driver cleanup: {str(e)}", file=sys.stderr)
 
     def quit(self):
         self.driver.quit()
+        # Also clean up the user data directory when explicitly quitting
+       

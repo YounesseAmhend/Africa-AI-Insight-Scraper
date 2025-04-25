@@ -1,10 +1,10 @@
-import grpc
-from protos import source_pb2_grpc
-from protos import source_pb2
+import logging
 
+import grpc
+
+from protos import source_pb2_grpc
 from protos.source_pb2 import ScrapeRequest, SourceRequest
 from settings import PORT
-import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -54,7 +54,7 @@ def test_grpc_functions():
 
     # Test scrape
     logger.info("Testing scrape...")
-    scrape_response = client.scrape()
+    client.scrape()
 
 
 if __name__ == "__main__":

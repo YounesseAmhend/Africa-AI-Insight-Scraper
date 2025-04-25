@@ -228,7 +228,8 @@ def scrape_news_detail(
             ),
         }
 
-        news = NewsAdd(
+        # Did this to see the check in
+        NewsAdd(
             authorId=None,
             title=title.get_text().strip(),
             url=page_url,
@@ -270,7 +271,7 @@ def scrape_news_detail(
             "next_button": general_selector["next_button"],
             "title": general_selector["title"],
         }
-
+        
         return {
             "selector": selector,
             "data": page_data,
@@ -635,7 +636,7 @@ class SourceService(SourceServiceServicer):
                         imageUrl=image_url,
                     )
                     logging.info("Successfully created NewsAdd object")
-                except:
+                except Exception:
                     self.addUpdateSource(
                         request=SourceRequest(
                             url=source.url,
@@ -693,7 +694,7 @@ class SourceService(SourceServiceServicer):
                 logging.info(f"Found author: {author.name}")
 
                 author_id = author_repository.get_or_create_author(author)
-            except:
+            except Exception:
                 self.addUpdateSource(
                     SourceUpdate(
                         url=url,

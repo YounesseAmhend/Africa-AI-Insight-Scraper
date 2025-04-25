@@ -1,6 +1,5 @@
 import logging
 
-from settings import DEBUG_MODE
 from protocols.custom_driver_protocol import CustomDriverProtocol
 
 

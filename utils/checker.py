@@ -139,5 +139,5 @@ class Checker:
             from urllib.parse import urlparse
             parsed = urlparse(url)
             return all([parsed.scheme, parsed.netloc])
-        except:
+        except Exception:
             return False
