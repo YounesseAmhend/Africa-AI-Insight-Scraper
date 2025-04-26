@@ -31,17 +31,3 @@ delete-build:
 
 docker:
 	make delete-build && make build && make run
-
-slim-prepare:
-	docker create -v /dcert_path --name dcert alpine:latest /bin/true
-	docker cp $DDOCKER_CERT_PATH/. dcert:/dcert_path
-
-slim:
-	docker run --rm --volumes-from dcert \
-		-e DOCKER_HOST=$DDOCKER_HOST \
-		-e DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY \
-		-e DOCKER_CERT_PATH=/dcert_path \
-		dslim/slim build scraper
-
-slim-run:
-	docker run -p 50051:50051 scraper.slim

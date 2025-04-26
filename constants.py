@@ -1,5 +1,4 @@
 # Constants and configuration
-from dtypes.source_dict import SourceDict
 
 NEWS_PROMPTS_PATH = "./prompts/news_prompt.md"
 NEWS_DETAIL_PROMPTS_PATH = "./prompts/news_detail_prompt.md"
@@ -35,10 +34,10 @@ CREATE TABLE IF NOT EXISTS authors (
 NEWS_TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS news (
     id SERIAL PRIMARY KEY,
-    sourceId INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+    sourceId BIGINT NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     url TEXT UNIQUE NOT NULL,
-    authorId INTEGER REFERENCES authors(id) ON DELETE SET NULL,
+    authorId BIGINT REFERENCES authors(id) ON DELETE SET NULL,
     body TEXT NOT NULL,
     postDate TIMESTAMP WITH TIME ZONE,
     imageUrl TEXT,

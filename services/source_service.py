@@ -1,6 +1,5 @@
 import datetime
 import logging
-import threading
 import time
 from typing import Callable
 
@@ -73,9 +72,9 @@ def try_until(
         Exception: If max_retries is reached without func returning a non-None value
     """
     for _ in range(max_retries):
-            result = func()
-            if result:
-                return result
+        result = func()
+        if result:
+            return result
     raise Exception(error_message)
 
 
@@ -171,10 +170,10 @@ def scrape_news_detail(
     )
 
     soup = BeautifulSoup(html_content, "html.parser")
-    
+
     try:
         logging.info("Starting to scrape news details")
-        
+
         # Logging element selection
         start_time = time.time()
         body = soup.select_one(selector=str(page_selector["body"]))
@@ -186,13 +185,19 @@ def scrape_news_detail(
 
         # Logging author information extraction
         start_time = time.time()
-        author_name_element = soup.select_one(selector=str(page_selector["author"]["name"]))  # type: ignore
-        author_link_element = soup.select_one(selector=str(page_selector["author"]["link"]))  # type: ignore
+        author_name_element = soup.select_one(
+            selector=str(page_selector["author"]["name"]) # type: ignore
+        )  # type: ignore
+        author_link_element = soup.select_one(
+            selector=str(page_selector["author"]["link"]) # type: ignore
+        )  # type: ignore
         author_image_url_element = soup.select_one(
-            selector=str(page_selector["author"]["image_url"]) # type: ignore
+            selector=str(page_selector["author"]["image_url"])  # type: ignore
         )
         end_time = time.time()
-        logging.info(f"Author element selection took {end_time - start_time:.2f} seconds")
+        logging.info(
+            f"Author element selection took {end_time - start_time:.2f} seconds"
+        )
 
         author_name = (
             author_name_element.get_text().strip() if author_name_element else None
@@ -204,7 +209,9 @@ def scrape_news_detail(
 
         if author_image_url is not None:
             logging.info(f"Resolving author image URL: {author_image_url}")
-            author_image_url = CustomSoup.resolve_relative_url(page_url, author_image_url)
+            author_image_url = CustomSoup.resolve_relative_url(
+                page_url, author_image_url
+            )
 
         if author_link is not None:
             logging.info(f"Resolving author link: {author_link}")
@@ -213,11 +220,11 @@ def scrape_news_detail(
         if body and post_date:
             body_text = body.get_text().strip()
             logging.info(f"Body text length: {len(body_text)} characters")
-            
+
             if "cookies" in body_text:
                 logging.warning("Found 'cookies' in body text, skipping article")
                 return None
-                
+
             image_url = image_url_element.get("src") if image_url_element else None
 
             if image_url is not None:
@@ -247,7 +254,7 @@ def scrape_news_detail(
             }
 
             logging.info("Validating news data structure")
-            try: 
+            try:
                 NewsAdd(
                     authorId=None,
                     title=title.get_text().strip(),
@@ -383,8 +390,7 @@ class SourceService(SourceServiceServicer):
         request: ScrapeRequest,
         context: ServicerContext,
     ) -> ScrapeResponse:
-        thread = threading.Thread(target=self._scrape)
-        thread.start()
+        self._scrape()
         return ScrapeResponse()
 
     def _scrape(self):

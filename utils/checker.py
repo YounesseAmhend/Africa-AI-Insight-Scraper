@@ -225,6 +225,22 @@ class Checker:
             "Article:",
             "News:",
             "Event:",
+            "منشور:",  # Arabic for "Post:"
+            "مقالة:",  # Arabic for "Article:"
+            "أخبار:",  # Arabic for "News:"
+            "حدث:",    # Arabic for "Event:"
+            "تاريخ النشر:",  # Arabic for "Publication date:"
+            "تاريخ:",  # Arabic for "Date:"
+            "Posté:",  # French for "Posted:"
+            "Article:",  # French for "Article:"
+            "Nouvelles:",  # French for "News:"
+            "Événement:",  # French for "Event:"
+            "Date de publication:",  # French for "Publication date:"
+            "Date:",  # French for "Date:"
+            "Publié:",  # French for "Published:"
+            "Mis à jour:",  # French for "Updated:"
+            "Créé:",  # French for "Created:"
+            "Dernière mise à jour:",  # French for "Last updated:"
         ]
         for prefix in date_prefixes:
             date = date.replace(prefix, "").strip()
