@@ -11,7 +11,7 @@ MAX_WORKERS = 5  # For thread pool
 
 # Llm settings
 GEMINI_MODEL = "gemini-2.0-flash"
-MAX_TOKENS = 8192
+MAX_OUTPUT_TOKENS = 8192
 
 
 PORT = "50051"

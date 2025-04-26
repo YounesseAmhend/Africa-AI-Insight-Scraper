@@ -1,54 +1,16 @@
-from dotenv import load_dotenv
+import logging
 import os
-from google.genai import Client
 
-from google.genai.types import GenerateContentConfig, Content, Part
-from google.generativeai.generative_models import GenerativeModel
 import google.generativeai.client as genai
+from dotenv import load_dotenv
+from google.genai import Client
+from google.genai.types import Content, GenerateContentConfig, Part
+from google.generativeai.generative_models import GenerativeModel
+
+from ai.llm_response import LlmResponse
 from ai.prompt import Prompt
 from constants import *
-import logging
-import re
-from settings import DEBUG_MODE, GEMINI_MODEL, MAX_TOKENS
-
-
-class LlmResponse:
-    def __init__(self, text: str):
-        """Initialize an LlmResponse instance with text and optional code.
-
-        Args:
-            text: The text response from the LLM
-            code: Optional dictionary containing any code blocks from the response
-        """
-        self.text = text
-        self.code = self.get_code()
-
-    def get_code(self) -> dict[str, object]:
-        """Extract Python code blocks from the LLM response text.
-
-        Returns:
-            dict: A dictionary containing extracted code blocks with their language as keys
-        """
-        # Pattern to match Python code blocks
-        pattern = r"```python\n(.*?)```"
-        matches = re.findall(pattern, self.text, re.DOTALL)
-        print(matches[0])
-        code = eval(matches[0]) if matches else {}
-
-        if code:
-            return code
-        else:
-            raise Exception(f"No code blocks found in the LLM response: {self.text}")
-
-    def __str__(self) -> str:
-        """Return a string representation of the LlmResponse containing both the text content and any extracted code.
-
-        Returns:
-            str: A formatted string showing the text response and any code blocks from the LLM
-        """
-        if self.code:
-            return f"Text Response:\n{self.text}\n\nExtracted Code:\n{self.code}"
-        return f"Text Response:\n{self.text}"
+from settings import DEBUG_MODE, GEMINI_MODEL, MAX_OUTPUT_TOKENS
 
 
 class Llm:
@@ -68,10 +30,10 @@ class Llm:
             cls._instance._api_key = api_key  # Private API key for Gemini
             if DEBUG_MODE:
                 logging.info(os.getenv("API_KEY"))
-                
+
             if api_key is None:
                 raise Exception("API key not found in environment variables")
-            
+
             cls._instance.client = Client(api_key=cls._instance._api_key)
 
             # Configuration for content generation
@@ -79,7 +41,7 @@ class Llm:
                 temperature=0,
                 top_p=0.9,
                 top_k=40,
-                max_output_tokens=MAX_TOKENS,
+                max_output_tokens=MAX_OUTPUT_TOKENS,
                 response_mime_type="text/plain",
             )
 
@@ -112,8 +74,10 @@ class Llm:
             ),
         ]
         genai.configure(api_key=self._api_key)
-        model = GenerativeModel(f"models/{GEMINI_MODEL}",)
-        logging.info("Total tokens: ", model.count_tokens(prompt.text))
+        model = GenerativeModel(
+            f"models/{GEMINI_MODEL}",
+        )
+        logging.info("Total tokens: %d", model.count_tokens(prompt.text).total_tokens)
 
         response = self.client.models.generate_content_stream(
             model=str(self.model),  # Specifies which Gemini model to use

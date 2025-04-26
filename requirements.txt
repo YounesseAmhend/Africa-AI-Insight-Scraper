@@ -3,8 +3,8 @@ requests
 selenium
 google-genai
 python-dotenv
-grpcio 
 google-generativeai
+grpcio 
 grpc-stubs
 grpcio-tools
 psycopg2-binary

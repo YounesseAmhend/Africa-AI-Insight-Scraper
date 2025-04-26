@@ -25,7 +25,7 @@ class NewsAdd:
             raise ValueError("Body cannot be empty")
             
         if not Checker.is_date(postDate):
-            raise ValueError(f"Invalid post date: {postDate}")
+            raise ValueError(f"Invalid post date: '{postDate}'")
 
         self.authorId = authorId
         self.title = title

@@ -17,20 +17,20 @@ client:
 	
 
 server:
-	python app.py
+	make run
 
 
 build:
 	docker build . -t scraper
 
-run-build:
+run:
 	docker run -p 50051:50051 scraper
 
 delete-build:
 	docker rmi -f scraper
 
 docker:
-	make delete-build && make build && make run-build
+	make delete-build && make build && make run
 
 slim-prepare:
 	docker create -v /dcert_path --name dcert alpine:latest /bin/true
