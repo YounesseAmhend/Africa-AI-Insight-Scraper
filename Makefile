@@ -45,3 +45,6 @@ slim:
 
 slim-run:
 	docker run -p 50051:50051 scraper.slim
+
+submodule:
+	git submodule update --init --recursive

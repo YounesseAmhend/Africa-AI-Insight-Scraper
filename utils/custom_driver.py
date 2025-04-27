@@ -26,15 +26,13 @@ class CustomDriver:
     DEFAULT_TIMEOUT_S = 10
 
     def __init__(self) -> None:
-        EDGE_DRIVER_PATH = (
-            "bin/msedgedriver.exe" if os.name == "nt" else "bin/msedgedriver"
-        )
+        # Use the correct path for Edge driver in Docker
+        EDGE_DRIVER_PATH = "/opt/msedgedriver/msedgedriver"
         self.service = Service(EDGE_DRIVER_PATH)
         self.options = webdriver.EdgeOptions()
 
         if not DEBUG_MODE:
             self.options.add_argument("--headless")
-
 
         self.options.add_argument("--incognito")
         self.options.add_argument("--disable-blink-features=AutomationControlled")
