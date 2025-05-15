@@ -3,7 +3,7 @@ from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 import logging
 
-from constants import AUTHORS_TABLE_SCHEMA, NEWS_TABLE_SCHEMA, SOURCE_TABLE_SCHEMA
+from constants import AUTHORS_TABLE_SCHEMA, CATEGORY_TABLE_SCHEMA, NEWS_TABLE_SCHEMA, SOURCE_TABLE_SCHEMA, STATISTICS_TABLE_SCHEMA
 
 class DatabaseConfig:
     """
@@ -87,6 +87,8 @@ class DatabaseConfig:
             SOURCE_TABLE_SCHEMA,
             AUTHORS_TABLE_SCHEMA,
             NEWS_TABLE_SCHEMA,
+            CATEGORY_TABLE_SCHEMA,
+            STATISTICS_TABLE_SCHEMA,
         ]
         try:
             with self.get_connection() as conn:

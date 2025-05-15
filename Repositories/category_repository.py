@@ -14,7 +14,7 @@ class CategoryRepository:
         """
         self.db_config = DatabaseConfig()
 
-    def get_or_create_category(self, category: Category) -> int:
+    def get_or_create_category(self, category_name: str) -> int:
         """
         Get or create a category in the database
 
@@ -27,18 +27,18 @@ class CategoryRepository:
         query = "SELECT id FROM categories WHERE name = %s"
         with self.db_config.get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (category.name,))
+                cursor.execute(query, (category_name,))
                 result = cursor.fetchone()
                 if result:
                     return result[0]
 
                 # If not found, create new category
                 query = """
-                    INSERT INTO categories (name, updatedAt)
-                    VALUES (%s, %s)
+                    INSERT INTO categories (name)
+                    VALUES (%s)
                     ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
                     RETURNING id
                 """
-                cursor.execute(query, (category.name, category.updatedAt))
+                cursor.execute(query, (category_name,))
                 conn.commit()
                 return cursor.fetchone()[0]

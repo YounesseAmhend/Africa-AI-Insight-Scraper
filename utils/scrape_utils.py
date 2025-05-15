@@ -166,6 +166,7 @@ class ScrapeUtils:
                         body=body,
                         postDate=post_date,
                         imageUrl=image_url,
+                        categoryId=None # will add it later in the news service
                     )
                 except ValueError as e:
                     logging.error(f"Validation error: {e}")

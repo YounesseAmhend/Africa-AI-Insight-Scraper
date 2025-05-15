@@ -3,13 +3,16 @@ import logging
 import time
 
 import pytz
-from bs4 import BeautifulSoup, ParserRejectedMarkup, Tag
+from bs4 import BeautifulSoup, ParserRejectedMarkup
 from grpc import ServicerContext
 
 from ai.llm import Llm
-from ai.prompt import Prompt
-from constants import (AFRICA_TRIGGER_PHRASES_PATH, AFRICA_TRIGGER_WORDS_PATH,
-                       AI_TRIGGER_PHRASES_PATH, AI_TRIGGER_WORDS_PATH)
+from constants import (
+    AFRICA_TRIGGER_PHRASES_PATH,
+    AFRICA_TRIGGER_WORDS_PATH,
+    AI_TRIGGER_PHRASES_PATH,
+    AI_TRIGGER_WORDS_PATH,
+)
 from dtypes.author_dict import AuthorDict
 from dtypes.selector import Selector
 from iterators.infinite_scrolling_iterator import InfiniteScrollIterator
@@ -17,18 +20,22 @@ from iterators.pagination_iterator import PaginationIterator
 from models.author import Author
 from models.news import NewsAdd
 from models.source import Source, SourceUpdate
-from protos.source_pb2 import (ScrapeRequest, ScrapeResponse, SourceRequest,
-                               SourceResponse)
+from protos.source_pb2 import (
+    ScrapeRequest,
+    ScrapeResponse,
+    SourceRequest,
+    SourceResponse,
+)
 from protos.source_pb2_grpc import SourceServiceServicer
 from repositories.author_repository import AuthorRepository
 from repositories.source_repository import SourceRepository
 from services.news_service import NewsService
+from services.statistics_service import StatisticsService
 from settings import DEBUG_MODE, LAST_FETCH_DATE
 from utils.checker import Checker
 from utils.custom_driver import CustomDriver
 from utils.custom_soup import CustomSoup
 from utils.helper import Helpers
-
 from utils.trigger_utils import TriggerFile, TriggerUtils
 
 from ..utils.scrape_utils import ScrapeUtils
@@ -123,7 +130,9 @@ class SourceService(SourceServiceServicer):
         author_repository = AuthorRepository()
         source_repository = SourceRepository()
         news_repository = NewsService()
-
+        statistics_service = StatisticsService()
+        
+        statistics_service.get_stats()
         sources = source_repository.get_sources()
 
         driver = CustomDriver()
@@ -401,6 +410,7 @@ class SourceService(SourceServiceServicer):
                         body=body,
                         postDate=post_date,
                         imageUrl=image_url,
+                        categoryId=None,  # will add it later
                     )
                     logging.info("Successfully created NewsAdd object")
                 except Exception:

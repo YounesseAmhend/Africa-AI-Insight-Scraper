@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import driver
 import logging
 import os
 import sys
@@ -20,6 +21,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from iterators.infinite_scrolling_iterator import InfiniteScrollIterator
 from iterators.pagination_iterator import PaginationIterator
 from settings import DEBUG_MODE
+import tempfile
+import requests
 
 
 
@@ -169,7 +172,25 @@ class CustomDriver:
             logging.error(f"Error while getting page HTML: {str(e)}")
             logging.warning("Returning current page source despite error")
             return self.driver.page_source
+        
+        
+    def download_file(self, link: str) -> str:
 
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            # Download the file from the link
+            response = requests.get(link)
+            response.raise_for_status()
+            
+            # Write the content to the temporary file
+            tmp_file.write(response.content)
+            tmp_file_path = tmp_file.name
+        
+        # Read the content from the temporary file
+        with open(tmp_file_path, 'r') as file:
+            content = file.read()
+        
+        return content
     def __del__(self):
         try:
             self.driver.quit()

@@ -33,16 +33,17 @@ class NewsRepository:
         query = """
             INSERT INTO news (
                 sourceId,
+                categoryId,
                 title,
                 url,
                 authorId,
                 body,
                 postDate,
-                imageUrl
+                imageUrl,
+                createdAt
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP
             )
-            
         """
 
         # Convert post_date from string to datetime if it exists
@@ -51,6 +52,7 @@ class NewsRepository:
             logging.info(f"Could not parse date: {data.postDate}")
         params = (
             data.sourceId,
+            data.categoryId,
             data.title,
             data.url,
             data.authorId,

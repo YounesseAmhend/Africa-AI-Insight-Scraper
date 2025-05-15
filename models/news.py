@@ -10,6 +10,7 @@ class NewsAdd:
         sourceId: int,
         body: str,
         postDate: str,
+        categoryId: int | None,
         imageUrl: str | None,
     ) -> None:
         if Checker.is_date(title):
@@ -32,4 +33,5 @@ class NewsAdd:
         self.sourceId = sourceId
         self.body = body
         self.postDate = postDate
+        self.categoryId = categoryId
         self.imageUrl = imageUrl
