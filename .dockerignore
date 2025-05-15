@@ -1,0 +1,33 @@
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore build and distribution files
+build/
+dist/
+*.egg-info/
+
+# Ignore logs and cache
+*.log
+.cache/
+
+# Ignore test files
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore local development files
+local_settings.py
+settings_local.py
+
+# Ignore Docker specific files
+docker-compose.yml
+docker-compose.override.yml
