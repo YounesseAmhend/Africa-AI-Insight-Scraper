@@ -10,7 +10,7 @@ class NewsService:
     repository: NewsRepository
     
     def __init__(self) -> None:
-        repository = NewsRepository()
+        self.repository = NewsRepository()
         
     def add_news(self, news: NewsAdd) -> None:
         news.body = MultilingualSummarizer().summarize(news.body)['summary']

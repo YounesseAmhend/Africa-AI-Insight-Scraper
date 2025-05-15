@@ -17,18 +17,6 @@ class SourceRepository:
     Service for managing source-related database operations
     """
 
-    TABLE_SCHEMA = """
-        CREATE TABLE IF NOT EXISTS sources (
-            id SERIAL PRIMARY KEY,
-            url TEXT UNIQUE NOT NULL,
-            selector JSONB,
-            triggerAfrica BOOLEAN NOT NULL,
-            triggerAi BOOLEAN NOT NULL,
-            createdAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NULL
-        )
-        """
-
     def __init__(
         self,
     ) -> None:

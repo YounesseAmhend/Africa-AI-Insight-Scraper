@@ -1,5 +1,3 @@
-# Constants and configuration
-
 NEWS_PROMPTS_PATH = "./prompts/news_prompt.md"
 NEWS_DETAIL_PROMPTS_PATH = "./prompts/news_detail_prompt.md"
 
@@ -9,6 +7,22 @@ AI_TRIGGER_PHRASES_PATH = "./data/ai/trigger_phrases.txt"
 AFRICA_TRIGGER_WORDS_PATH = "./data/africa/trigger_words.txt"
 AFRICA_TRIGGER_PHRASES_PATH = "./data/africa/trigger_phrases.txt"
 
+CATEGORY_TABLE_SCHEMA = """
+CREATE TABLE IF NOT EXISTS categories (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NULL
+);
+"""
+
+STATISTICS_TABLE_SCHEMA = """
+CREATE TABLE IF NOT EXISTS sources (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    stats JSONB,
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NULL
+);
+"""
 
 SOURCE_TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS sources (
