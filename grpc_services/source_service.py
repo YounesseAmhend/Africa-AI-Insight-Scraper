@@ -38,7 +38,7 @@ from utils.custom_soup import CustomSoup
 from utils.helper import Helpers
 from utils.trigger_utils import TriggerFile, TriggerUtils
 
-from ..utils.scrape_utils import ScrapeUtils
+from utils.scrape_utils import ScrapeUtils
 
 logging.basicConfig(
     level=logging.INFO,
