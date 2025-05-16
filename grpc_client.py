@@ -1,14 +1,9 @@
-import logging
-
 import grpc
 
 from protos import source_pb2_grpc
 from protos.source_pb2 import ScrapeRequest, SourceRequest
 from settings import PORT
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from utils.logger import logger
 
 
 class SourceClient:
@@ -46,11 +41,12 @@ def test_grpc_functions():
 
     # Test addSource
     logger.info("Testing addSource...")
-    # add_response = client.add_source(
-    #     url="https://www.up.ac.za/news",
-    #     contains_ai=False,
-    #     contains_africa=True,
-    # )
+
+    client.add_source(
+        url="https://www.news.uct.ac.za/article/-action/list/-archive/news/-category/all/-year/all/-month/all",
+        contains_ai=False,
+        contains_africa=True,
+    )
 
     # Test scrape
     logger.info("Testing scrape...")

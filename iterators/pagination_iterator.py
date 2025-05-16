@@ -1,6 +1,5 @@
-import logging
-
 from protocols.custom_driver_protocol import CustomDriverProtocol
+from utils.logger import logger
 
 
 class PaginationIterator:
@@ -23,7 +22,7 @@ class PaginationIterator:
 
         if self.currentPage > 1:
             try:
-                logging.debug(f"Navigating to page {self.currentPage}")
+                logger.debug(f"Navigating to page {self.currentPage}")
                 self.driver.nextPage(self.css_selector, self.timeout_s)
             except StopIteration:
                 raise StopIteration

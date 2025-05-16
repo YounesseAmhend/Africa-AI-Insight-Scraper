@@ -1,8 +1,9 @@
 import datetime
-import logging
+
 from config.db import DatabaseConfig
 from models.news import NewsAdd
 from utils.checker import Checker
+from utils.logger import logger
 
 
 class NewsRepository:
@@ -49,7 +50,7 @@ class NewsRepository:
         # Convert post_date from string to datetime if it exists
         date = Checker.get_date(data.postDate)
         if date is None:
-            logging.info(f"Could not parse date: {data.postDate}")
+            logger.info(f"Could not parse date: {data.postDate}")
         params = (
             data.sourceId,
             data.categoryId,
@@ -61,15 +62,15 @@ class NewsRepository:
             data.imageUrl,
         )
 
-        logging.info(f"Preparing to insert news article with params: {params}")
+        logger.info(f"Preparing to insert news article with params: {params}")
 
         with self.db_config.get_connection() as conn:
             with conn.cursor() as cursor:
                 try:
-                    logging.info("Executing SQL query to insert news article")
+                    logger.info("Executing SQL query to insert news article")
                     cursor.execute(query, params)
                     conn.commit()
-                    logging.info("Successfully inserted news article")
+                    logger.info("Successfully inserted news article")
                 except Exception as e:
-                    logging.error(f"Failed to insert news article: {str(e)}")
+                    logger.error(f"Failed to insert news article: {str(e)}")
                     raise

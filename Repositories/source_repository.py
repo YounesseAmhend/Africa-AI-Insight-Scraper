@@ -1,15 +1,12 @@
 import datetime
-from config.db import DatabaseConfig
-
 
 from psycopg2.extras import Json
 
-
-import logging
-
+from config.db import DatabaseConfig
 from dtypes.selector import Selector
 from models.source import Source, SourceUpdate
 from protos.source_pb2 import SourceRequest
+from utils.logger import logger
 
 
 class SourceRepository:
@@ -51,9 +48,9 @@ class SourceRepository:
                         (Json(selector), id),
                     )
                 conn.commit()
-                logging.info(f"Selector updated for source ID: {id}")
+                logger.info(f"Selector updated for source ID: {id}")
         except Exception as e:
-            logging.error(f"Error updating selector: {e}")
+            logger.error(f"Error updating selector: {e}")
             raise
 
     def get_sources(self) -> list[Source]:
@@ -88,7 +85,7 @@ class SourceRepository:
                 return sources
 
         except Exception as e:
-            logging.error(f"Error retrieving sources: {e}")
+            logger.error(f"Error retrieving sources: {e}")
             raise
 
     def get_source(self, id: int) -> Source:
@@ -109,18 +106,18 @@ class SourceRepository:
                     cur.execute(select_query, (id,))
                     row = cur.fetchone()
                     if row:
-                        return  Source(
-                        id=row[0],
-                        url=row[1],
-                        selector=dict(row[2]) if row[2] else {},
-                        triggerAfrica=row[3],
-                        triggerAi=row[4],
-                        createdAt=row[5].isoformat(),
-                        updateAt=row[6].isoformat() if row[6] else None,
-                    )
+                        return Source(
+                            id=row[0],
+                            url=row[1],
+                            selector=dict(row[2]) if row[2] else {},
+                            triggerAfrica=row[3],
+                            triggerAi=row[4],
+                            createdAt=row[5].isoformat(),
+                            updateAt=row[6].isoformat() if row[6] else None,
+                        )
                     raise ValueError(f"Source with ID {id} not found")
         except Exception as e:
-            logging.error(f"Error retrieving source: {e}")
+            logger.error(f"Error retrieving source: {e}")
             raise
 
     def update_at(
@@ -147,9 +144,9 @@ class SourceRepository:
                         (time.isoformat(), id),
                     )
                 conn.commit()
-                logging.info(f"Timestamp updated for source ID: {id}")
+                logger.info(f"Timestamp updated for source ID: {id}")
         except Exception as e:
-            logging.error(f"Error updating timestamp: {e}")
+            logger.error(f"Error updating timestamp: {e}")
             raise
 
     def upsert_source(
@@ -192,8 +189,8 @@ class SourceRepository:
                     )
                     record_id: int = cur.fetchone()[0]
                 conn.commit()
-                logging.info(f"Source stored/updated for URL: {source.url}")
+                logger.info(f"Source stored/updated for URL: {source.url}")
                 return record_id
         except Exception as e:
-            logging.info(f"Error storing source: {e}")
+            logger.info(f"Error storing source: {e}")
             raise

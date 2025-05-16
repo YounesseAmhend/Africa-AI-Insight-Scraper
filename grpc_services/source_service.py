@@ -1,5 +1,4 @@
 import datetime
-import logging
 import time
 
 import pytz
@@ -36,15 +35,10 @@ from utils.checker import Checker
 from utils.custom_driver import CustomDriver
 from utils.custom_soup import CustomSoup
 from utils.helper import Helpers
+from utils.logger import logger
+from utils.scrape_utils import ScrapeUtils
 from utils.trigger_utils import TriggerFile, TriggerUtils
 
-from utils.scrape_utils import ScrapeUtils
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("scraper.log"), logging.StreamHandler()],
-)
 utc = pytz.UTC
 llm = Llm()
 
@@ -60,19 +54,19 @@ try:
     africa_trigger_phrases = TriggerFile(AFRICA_TRIGGER_PHRASES_PATH)
 
     trigger_words_ai = ai_trigger_words.get()
-    logging.info(f"Loaded {len(trigger_words_ai)} AI trigger words")
+    logger.info(f"Loaded {len(trigger_words_ai)} AI trigger words")
 
     trigger_phrases_ai = ai_trigger_phrases.get()
-    logging.info(f"Loaded {len(trigger_phrases_ai)} AI trigger phrases")
+    logger.info(f"Loaded {len(trigger_phrases_ai)} AI trigger phrases")
 
     trigger_words_africa = africa_trigger_words.get()
-    logging.info(f"Loaded {len(trigger_words_africa)} Africa trigger words")
+    logger.info(f"Loaded {len(trigger_words_africa)} Africa trigger words")
 
     trigger_phrases_africa = africa_trigger_phrases.get()
-    logging.info(f"Loaded {len(trigger_phrases_africa)} Africa trigger phrases")
+    logger.info(f"Loaded {len(trigger_phrases_africa)} Africa trigger phrases")
 
 except Exception as e:
-    logging.error(f"Error loading trigger files: {str(e)}")
+    logger.error(f"Error loading trigger files: {str(e)}")
 
     # This is good in info so we can know that we need to fix something
     if DEBUG_MODE:
@@ -87,7 +81,7 @@ def is_valid_article(
     should_add_africa = False
 
     if trigger_africa:
-        logging.info(f"Checking for Africa triggers in: {title}")
+        logger.info(f"Checking for Africa triggers in: {title}")
 
         should_add_africa = TriggerUtils.contains_triggers(
             title,
@@ -96,12 +90,12 @@ def is_valid_article(
         )
 
         if "africa" in title.lower():
-            logging.info(f"Found Africa keyword in: {title}")
+            logger.info(f"Found Africa keyword in: {title}")
 
     should_add_ai = False
 
     if trigger_ai:
-        logging.info(f"Checking for AI triggers in: {title}")
+        logger.info(f"Checking for AI triggers in: {title}")
 
         should_add_ai = TriggerUtils.contains_triggers(
             title,
@@ -110,7 +104,7 @@ def is_valid_article(
         )
 
         if should_add_ai:
-            logging.info(f"Found AI trigger in: {title}")
+            logger.info(f"Found AI trigger in: {title}")
 
     should_add = should_add_ai == trigger_ai and should_add_africa == trigger_africa
 
@@ -129,9 +123,9 @@ class SourceService(SourceServiceServicer):
     def _scrape(self):
         author_repository = AuthorRepository()
         source_repository = SourceRepository()
-        news_repository = NewsService()
+        news_service = NewsService()
         statistics_service = StatisticsService()
-        
+
         statistics_service.get_stats()
         sources = source_repository.get_sources()
 
@@ -141,7 +135,7 @@ class SourceService(SourceServiceServicer):
             self._handle_source(
                 author_repository,
                 source_repository,
-                news_repository,
+                news_service,
                 driver,
                 source,
             )
@@ -152,7 +146,7 @@ class SourceService(SourceServiceServicer):
         self,
         author_repository: AuthorRepository,
         source_repository: SourceRepository,
-        news_repository: NewsService,
+        news_service: NewsService,
         driver: CustomDriver,
         source: Source,
     ):
@@ -173,7 +167,7 @@ class SourceService(SourceServiceServicer):
             next_button_selector = selector["next_button"]
             load_more_selector = selector["load_more_button"]
 
-            logging.info(f"Navigating to URL: {url}")
+            logger.info(f"Navigating to URL: {url}")
 
             try:
                 limit: int | None = None
@@ -182,7 +176,7 @@ class SourceService(SourceServiceServicer):
                 self._handle_content(
                     author_repository,
                     source_repository,
-                    news_repository,
+                    news_service,
                     driver,
                     source,
                     url,
@@ -199,31 +193,31 @@ class SourceService(SourceServiceServicer):
                 break
 
             except ParserRejectedMarkup as e:
-                logging.error(
+                logger.error(
                     f"HTML parsing error scraping source {source.url}: {str(e)}",
                     exc_info=True,
                 )
                 continue
             except KeyError as e:
-                logging.error(
+                logger.error(
                     f"Missing selector key error scraping source {source.url}: {str(e)}",
                     exc_info=True,
                 )
                 continue
             except AttributeError as e:
-                logging.error(
+                logger.error(
                     f"Attribute access error scraping source {source.url}: {str(e)}",
                     exc_info=True,
                 )
                 continue
             except ValueError as e:
-                logging.error(
+                logger.error(
                     f"Value error scraping source {source.url}: {str(e)}",
                     exc_info=True,
                 )
                 continue
             except Exception as e:
-                logging.error(
+                logger.error(
                     f"Unexpected error scraping source {source.url}: {str(e)}",
                     exc_info=True,
                 )
@@ -290,7 +284,7 @@ class SourceService(SourceServiceServicer):
     def _handle_articles(
         self,
         author_repository: AuthorRepository,
-        news_repository: NewsService,
+        news_service: NewsService,
         driver: CustomDriver,
         source: Source,
         url: str,
@@ -300,23 +294,23 @@ class SourceService(SourceServiceServicer):
         author_selector: AuthorDict | None,
         loaded_content: str,
     ):
-        logging.info("Parsing HTML with BeautifulSoup")
+        logger.info("Parsing HTML with BeautifulSoup")
         soup = BeautifulSoup(loaded_content, "html.parser")
 
-        logging.info(f"Selecting elements with selector: {selector['title']}")
+        logger.info(f"Selecting elements with selector: {selector['title']}")
         elements = soup.select(selector["title"])
 
-        logging.info(f"Found {len(elements)} title elements")
+        logger.info(f"Found {len(elements)} title elements")
 
-        logging.info(f"Selecting links with selector: {selector['link']}")
+        logger.info(f"Selecting links with selector: {selector['link']}")
         links = soup.select(selector["link"])
 
-        logging.info(f"Found {len(links)} link elements")
+        logger.info(f"Found {len(links)} link elements")
 
-        logging.info(f"Processing {len(elements)} elements")
+        logger.info(f"Processing {len(elements)} elements")
 
         for i, element in enumerate(elements):
-            logging.info(f"Processing element {i + 1}/{len(elements)}")
+            logger.info(f"Processing element {i + 1}/{len(elements)}")
 
             title = element.get_text().strip()
 
@@ -326,8 +320,8 @@ class SourceService(SourceServiceServicer):
                 trigger_ai=trigger_ai,
             )
 
-            logging.info(f"Title: {title}")
-            logging.info(f"Should add this result: {should_add}")
+            logger.info(f"Title: {title}")
+            logger.info(f"Should add this result: {should_add}")
 
             if should_add:
                 news_url = links[i].get("href")
@@ -337,10 +331,10 @@ class SourceService(SourceServiceServicer):
 
                     # Skip entries with no link (can't fetch additional data)
                 if news_url is None:
-                    logging.info("Skipping - link is None")
+                    logger.info("Skipping - link is None")
                     continue
 
-                logging.info(f"Fetching author information from: {news_url}")
+                logger.info(f"Fetching author information from: {news_url}")
 
                 news_url = CustomSoup.resolve_relative_url(url, news_url)
 
@@ -383,23 +377,23 @@ class SourceService(SourceServiceServicer):
                 if source.updatedAt and datetime.datetime.fromisoformat(
                     source.updatedAt
                 ).replace(tzinfo=pytz.UTC) > date.replace(tzinfo=pytz.UTC):
-                    logging.info(
+                    logger.info(
                         f"Skipping article from {date} as it's older than source's last update {source.updatedAt}"
                     )
                     raise StopIteration
 
                 if LAST_FETCH_DATE > date.date():
-                    logging.info(
+                    logger.info(
                         f"Skipping article from {date.date()} as it's older than LAST_FETCH_DATE {LAST_FETCH_DATE}"
                     )
                     raise StopIteration
                 author_id = author_id if author_id else None
 
                 try:
-                    logging.info(
+                    logger.info(
                         f"Creating NewsAdd object with: authorId={author_id}, title={title}, url={url}, sourceId={source.id}"
                     )
-                    logging.info(
+                    logger.info(
                         f"Body length: {len(body)}, Post date: {post_date}, Image URL: {image_url}"
                     )
                     news = NewsAdd(
@@ -412,7 +406,7 @@ class SourceService(SourceServiceServicer):
                         imageUrl=image_url,
                         categoryId=None,  # will add it later
                     )
-                    logging.info("Successfully created NewsAdd object")
+                    logger.info("Successfully created NewsAdd object")
                 except Exception:
                     self.addUpdateSource(
                         request=SourceRequest(
@@ -424,12 +418,12 @@ class SourceService(SourceServiceServicer):
                     raise Exception("The detail selector are invalid")
 
                 try:
-                    news_repository.add_news(news)
+                    news_service.add_news(news)
                 except Exception as e:
                     print(e)
                     continue
 
-                logging.info(f"Adding result: {title}")
+                logger.info(f"Adding result: {title}")
 
     def _get_create_author(
         self,
@@ -442,7 +436,7 @@ class SourceService(SourceServiceServicer):
     ) -> int:
         author: Author | None = None
         if author_selector is not None:
-            logging.info(f"Looking for author with selector: {author_selector}")
+            logger.info(f"Looking for author with selector: {author_selector}")
             author_name = soup.select_text(author_selector["name"])
             author_url = soup.select_url(
                 base_url=url,
@@ -470,7 +464,7 @@ class SourceService(SourceServiceServicer):
                     image_url=image_url,
                 )
 
-                logging.info(f"Found author: {author.name}")
+                logger.info(f"Found author: {author.name}")
 
                 author_id = author_repository.get_or_create_author(author)
             except Exception:
@@ -500,7 +494,7 @@ class SourceService(SourceServiceServicer):
         result = self.addUpdateSource(request)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        logging.info(f"addSource completed in {elapsed_time:.2f} seconds")
+        logger.info(f"addSource completed in {elapsed_time:.2f} seconds")
 
         return SourceResponse(
             message=str(
@@ -524,7 +518,7 @@ class SourceService(SourceServiceServicer):
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        logging.info(f"Scraping completed in {elapsed_time:.2f} seconds")
+        logger.info(f"Scraping completed in {elapsed_time:.2f} seconds")
 
         selector = result["selector"]  # type: ignore
 
@@ -541,6 +535,6 @@ class SourceService(SourceServiceServicer):
                 result["db_record_id"] = record_id  # type: ignore
 
             except Exception as e:
-                logging.error(f"Failed to store source: {e}")
+                logger.error(f"Failed to store source: {e}")
 
         return result

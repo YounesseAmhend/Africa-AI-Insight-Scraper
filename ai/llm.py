@@ -1,4 +1,3 @@
-import logging
 import os
 
 import google.generativeai.client as genai
@@ -11,6 +10,7 @@ from ai.llm_response import LlmResponse
 from ai.prompt import Prompt
 from constants import *
 from settings import DEBUG_MODE, GEMINI_MODEL, MAX_OUTPUT_TOKENS
+from utils.logger import logger
 
 
 class Llm:
@@ -19,7 +19,7 @@ class Llm:
         load_dotenv()
         self._api_key = os.getenv("API_KEY")
         if DEBUG_MODE:
-            logging.info(os.getenv("API_KEY"))
+            logger.info(os.getenv("API_KEY"))
 
         if self._api_key is None:
             raise Exception("API key not found in environment variables")
@@ -64,7 +64,7 @@ class Llm:
         model = GenerativeModel(
             f"models/{GEMINI_MODEL}",
         )
-        logging.info("Total tokens: %d", model.count_tokens(prompt.text).total_tokens)
+        logger.info("Total tokens: %d", model.count_tokens(prompt.text).total_tokens)
 
         response = self.client.models.generate_content_stream(
             model=str(self.model),  # Specifies which Gemini model to use

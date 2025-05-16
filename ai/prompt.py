@@ -1,8 +1,12 @@
-import logging
-from utils.general_utils import read_file
-
-
 import re
+from enum import Enum
+from utils.general_utils import read_file
+from utils.logger import logger
+
+
+class PromptType(Enum):
+    HTML = 1
+    TEXT = 2
 
 
 class Prompt:
@@ -10,7 +14,8 @@ class Prompt:
     def __init__(
         self,
         template_path: str,
-        html_content: str,
+        content: str,
+        type: PromptType = PromptType.HTML
     ) -> None:
         """Initialize a Prompt instance with template path and HTML content.
 
@@ -18,11 +23,16 @@ class Prompt:
             prompt_template_path: Path to the template file
             html_content: HTML content to be used in the prompt
         """
-        self.template_path = template_path
-        self.html_content = html_content
 
-        self.text = self.create_prompt_from_html()
-
+        match type:
+            case PromptType.HTML:
+                self.template_path = template_path
+                self.html_content = content
+                self.text = self.create_prompt_from_html()
+            case _:
+                self.text = self.insert_content_into_template(
+                    placeholder="[TEXT HERE]", content=content
+                )
     def create_prompt_from_html(
         self,
     ) -> str:
@@ -38,18 +48,18 @@ class Prompt:
         Returns:
             str: The final prompt string combining the template and cleaned HTML content
         """
-        logging.info(
+        logger.info(
             f"Creating prompt from HTML content using template: {self.template_path}"
         )
         cleaned_html = self.clean_html_content(self.html_content)
 
         self.html_content = cleaned_html
 
-        logging.info(f"Inserting cleaned HTML into template: {self.template_path}")
+        logger.info(f"Inserting cleaned HTML into template: {self.template_path}")
 
-        result = self.insert_html_into_template()
+        result = self.insert_content_into_template(self.html_content)
 
-        logging.info(f"Final prompt length: {len(result)} characters")
+        logger.info(f"Final prompt length: {len(result)} characters")
 
         return result
 
@@ -70,7 +80,7 @@ class Prompt:
         body_match = body_pattern.search(html_content)
 
         if not body_match:
-            logging.error("No <body> tags found in the HTML content")
+            logger.error("No <body> tags found in the HTML content")
             raise ValueError("No <body> tags found in the HTML content")
 
         body_content = body_match.group(1)
@@ -93,7 +103,7 @@ class Prompt:
             before_length = len(cleaned_html)
             cleaned_html = compiled_pattern.sub("", cleaned_html)
             after_length = len(cleaned_html)
-            logging.debug(
+            logger.debug(
                 f"Removed {description}, reduced content by {before_length - after_length} characters"
             )
 
@@ -109,16 +119,14 @@ class Prompt:
             (original_length - cleaned_length) / original_length
         ) * 100
 
-        logging.info(
+        logger.info(
             f"HTML cleaning completed. Removed {percentage_removed:.2f}% of original content. "
             f"Final content length: {cleaned_length} characters"
         )
 
         return cleaned_html
 
-    def insert_html_into_template(
-        self,
-    ) -> str:
+    def insert_content_into_template(self,content:str, placeholder="[HTML CODE HERE]",) -> str:
         """Insert HTML content into a template file at a specified placeholder.
 
         Args:
@@ -134,19 +142,18 @@ class Prompt:
         """
         try:
             template_content = read_file(self.template_path)
-            PLACEHOLDER = "[HTML CODE HERE]"
 
-            if PLACEHOLDER not in template_content:
-                logging.error(
-                    f"Placeholder '{PLACEHOLDER}' not found in template file: {self.template_path}"
+            if placeholder not in template_content:
+                logger.error(
+                    f"Placeholder '{placeholder}' not found in template file: {self.template_path}"
                 )
                 raise ValueError(
-                    f"Placeholder '{PLACEHOLDER}' not found in template file: {self.template_path}"
+                    f"Placeholder '{placeholder}' not found in template file: {self.template_path}"
                 )
 
-            return template_content.replace(PLACEHOLDER, self.html_content)
+            return template_content.replace(placeholder, content)
         except FileNotFoundError as e:
-            logging.error(f"Template file not found: {self.template_path}")
+            logger.error(f"Template file not found: {self.template_path}")
             raise FileNotFoundError(
                 f"Template file not found: {self.template_path}"
             ) from e

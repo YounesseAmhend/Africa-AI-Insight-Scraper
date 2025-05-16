@@ -1,17 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor
+
 import grpc
+
 from grpc_services.source_service import SourceService
 from protos import source_pb2_grpc
 from settings import PORT
-import logging
+from utils.logger import logger
 
-# Configure logging
-logging.basicConfig(
-    level=logging.NOTSET,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("scraper.log"), logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
 
 
 def serve() -> None:

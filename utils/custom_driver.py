@@ -1,9 +1,10 @@
-from lib2to3.pgen2 import driver
-import logging
 import os
 import sys
+import tempfile
+from lib2to3.pgen2 import driver
 from time import sleep
 
+import requests
 from selenium import webdriver
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
@@ -21,9 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from iterators.infinite_scrolling_iterator import InfiniteScrollIterator
 from iterators.pagination_iterator import PaginationIterator
 from settings import DEBUG_MODE
-import tempfile
-import requests
-
+from utils.logger import logger
 
 
 class CustomDriver:
@@ -85,7 +84,7 @@ class CustomDriver:
         timeout_s: float = DEFAULT_TIMEOUT_S,
         max_loads: int = 20,
     ) -> str:
-        logging.debug("Handling infinite scrolling...")
+        logger.debug("Handling infinite scrolling...")
         html = ""
         for page in InfiniteScrollIterator(self, css_selector, timeout_s, max_loads):
             html += page
@@ -97,7 +96,7 @@ class CustomDriver:
         timeout_s: float = DEFAULT_TIMEOUT_S,
         max_pages: int = 20,
     ) -> str:
-        logging.debug("Handling pagination...")
+        logger.debug("Handling pagination...")
         html: str = ""
         for page in PaginationIterator(self, css_selector, timeout_s, limit=max_pages):
             html += page
@@ -142,17 +141,17 @@ class CustomDriver:
             sleep(2)
 
         except Exception as e:
-            logging.error(f"Error type: {type(e).__name__}")
+            logger.error(f"Error type: {type(e).__name__}")
             if isinstance(e, TimeoutException):
-                logging.error("Timeout waiting for next button to be clickable")
+                logger.error("Timeout waiting for next button to be clickable")
             elif isinstance(e, ElementNotInteractableException):
-                logging.error("Next button found but not clickable")
+                logger.error("Next button found but not clickable")
             elif isinstance(e, NoSuchElementException):
-                logging.error("Next button element not found in the DOM")
+                logger.error("Next button element not found in the DOM")
             elif isinstance(e, StaleElementReferenceException):
-                logging.error("Next button reference is stale (page may have changed)")
+                logger.error("Next button reference is stale (page may have changed)")
             elif isinstance(e, ElementClickInterceptedException):
-                logging.error("Click was intercepted by another element")
+                logger.error("Click was intercepted by another element")
 
             # Signal the end of pagination by raising StopIteration
             # This will be caught by the PaginationIterator
@@ -160,20 +159,19 @@ class CustomDriver:
 
     def get_html(self) -> str:
         try:
-            logging.info("Waiting for the Page fully loaded, retrieving HTML source")
+            logger.info("Waiting for the Page fully loaded, retrieving HTML source")
 
             self.wait.until(
                 lambda driver: driver.execute_script("return document.readyState")
                 == "complete",
             )
-            logging.info("Page fully loaded, retrieving HTML source")
+            logger.info("Page fully loaded, retrieving HTML source")
             return self.driver.page_source
         except Exception as e:
-            logging.error(f"Error while getting page HTML: {str(e)}")
-            logging.warning("Returning current page source despite error")
+            logger.error(f"Error while getting page HTML: {str(e)}")
+            logger.warning("Returning current page source despite error")
             return self.driver.page_source
-        
-        
+
     def download_file(self, link: str) -> str:
 
         # Create a temporary file
@@ -181,25 +179,25 @@ class CustomDriver:
             # Download the file from the link
             response = requests.get(link)
             response.raise_for_status()
-            
+
             # Write the content to the temporary file
             tmp_file.write(response.content)
             tmp_file_path = tmp_file.name
-        
+
         # Read the content from the temporary file
-        with open(tmp_file_path, 'r') as file:
+        with open(tmp_file_path, "r") as file:
             content = file.read()
-        
+
         return content
+
     def __del__(self):
         try:
             self.driver.quit()
             # Cleanup the temporary user data directory
-       
+
         except Exception as e:
             print(f"Error during driver cleanup: {str(e)}", file=sys.stderr)
 
     def quit(self):
         self.driver.quit()
         # Also clean up the user data directory when explicitly quitting
-       

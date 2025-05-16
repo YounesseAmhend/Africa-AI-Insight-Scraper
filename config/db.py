@@ -1,9 +1,17 @@
 import os
-from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
-import logging
 
-from constants import AUTHORS_TABLE_SCHEMA, CATEGORY_TABLE_SCHEMA, NEWS_TABLE_SCHEMA, SOURCE_TABLE_SCHEMA, STATISTICS_TABLE_SCHEMA
+from psycopg2.pool import SimpleConnectionPool
+
+from constants import (
+    AUTHORS_TABLE_SCHEMA,
+    CATEGORY_TABLE_SCHEMA,
+    NEWS_TABLE_SCHEMA,
+    SOURCE_TABLE_SCHEMA,
+    STATISTICS_TABLE_SCHEMA,
+)
+from utils.logger import logger
+
 
 class DatabaseConfig:
     """
@@ -55,7 +63,7 @@ class DatabaseConfig:
                 min_connections, max_connections, **self.connection_params
             )
         except Exception as e:
-            logging.error(f"Database connection pool error: {e}")
+            logger.error(f"Database connection pool error: {e}")
             raise
 
         self._initialized = True
@@ -64,23 +72,22 @@ class DatabaseConfig:
 
     @contextmanager
     def get_connection(self):
-        if not hasattr(self, 'connection_pool'):
+        if not hasattr(self, "connection_pool"):
             raise AttributeError("Connection pool not initialized")
-            
+
         conn = self.connection_pool.getconn()
-        logging.debug(f"Acquired connection: {conn}")
+        logger.debug(f"Acquired connection: {conn}")
         try:
             yield conn
         finally:
-            logging.debug(f"Releasing connection: {conn}")
+            logger.debug(f"Releasing connection: {conn}")
             self.connection_pool.putconn(conn)
-
 
     def create_tables(self):
         """
         Create necessary tables if they don't exist
         """
-        if not hasattr(self, 'connection_pool'):
+        if not hasattr(self, "connection_pool"):
             return
 
         TABLES: list[str] = [
@@ -97,5 +104,5 @@ class DatabaseConfig:
                         cur.execute(table)
                 conn.commit()
         except Exception as e:
-            logging.error(f"Error creating tables: {e}")
+            logger.error(f"Error creating tables: {e}")
             raise

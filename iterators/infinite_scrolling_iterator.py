@@ -1,15 +1,12 @@
-import logging
 from time import sleep
 
-from selenium.common.exceptions import (
-    NoSuchElementException,
-    TimeoutException,
-)
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from protocols.custom_driver_protocol import CustomDriverProtocol
+from utils.logger import logger
 
 
 class InfiniteScrollIterator:
@@ -79,7 +76,7 @@ class InfiniteScrollIterator:
                     self.html += new_html
                     return new_html
                 except (TimeoutException, NoSuchElementException):
-                    logging.debug("No more 'Load More' button found")
+                    logger.debug("No more 'Load More' button found")
                     raise StopIteration
             else:
                 # If we're just scrolling without a button and content loaded
@@ -90,5 +87,5 @@ class InfiniteScrollIterator:
                     raise StopIteration
 
         except Exception as e:
-            logging.error(f"Error during infinite scrolling: {str(e)}")
+            logger.error(f"Error during infinite scrolling: {str(e)}")
             raise StopIteration

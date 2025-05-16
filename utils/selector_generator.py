@@ -1,10 +1,7 @@
-
-
-import logging
 from ai.llm import Llm
 from ai.prompt import Prompt
 from utils.custom_driver import CustomDriver
-
+from utils.logger import logger
 
 
 class SelectorGenerator:
@@ -33,11 +30,11 @@ class SelectorGenerator:
 
         prompt = Prompt(
             template_path=selector_prompt_template_path,
-            html_content=html_content,
+            content=html_content,
         )
 
         result = llm.prompt(prompt)
-        logging.info(f"Generated selectors: {result}")
+        logger.info(f"Generated selectors: {result}")
 
         selectors = result.code
 

@@ -1,5 +1,6 @@
-import logging
 import re
+
+from utils.logger import logger
 
 
 class LlmResponse:
@@ -13,7 +14,7 @@ class LlmResponse:
         self.text = text
         self.code = self.get_code()
 
-    def get_code(self) -> dict[str, object]:
+    def get_code(self) -> object:
         """Extract Python code blocks from the LLM response text.
 
         Returns:
@@ -21,18 +22,22 @@ class LlmResponse:
         """
         # Pattern to match Python code blocks
         # Check for both Python and JSON code blocks
-        patterns = [
-            r"```python\n(.*?)```",
-            r"```json\n(.*?)```"
-        ]
+        # Check for HTML content first
+        html_pattern = r"```html\n(.*?)```"
+        html_match = re.search(html_pattern, self.text, re.DOTALL)
+        
+        if html_match is not None:
+            return html_match.group(1)
+        # If no HTML, check for other code blocks
+        patterns = [r"```python\n(.*?)```", r"```json\n(.*?)```"]
         matches = []
         for pattern in patterns:
             matches.extend(re.findall(pattern, self.text, re.DOTALL))
-        logging.info(f"Code: {matches}")
-        
+        logger.info(f"Code: {matches}")
+
         if not matches or len(matches) == 0:
             return {}
-            
+
         code_str = matches[0]
         try:
             code = eval(code_str)
