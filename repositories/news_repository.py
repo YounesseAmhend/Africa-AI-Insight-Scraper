@@ -44,7 +44,7 @@ class NewsRepository:
                 createdAt
             ) VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP
-            ) ON CONFLICT (title) DO UPDATE SET body = EXCLUDED.body
+            ) ON CONFLICT (url) DO UPDATE SET body = EXCLUDED.body
         """
 
         # Convert post_date from string to datetime if it exists
