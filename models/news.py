@@ -9,7 +9,7 @@ class NewsAdd:
         url: str,
         sourceId: int,
         body: str,
-        postDate: str,
+        postDate: str | None,
         categoryId: int | None,
         imageUrl: str | None,
     ) -> None:
@@ -23,8 +23,7 @@ class NewsAdd:
             raise ValueError("Title cannot be empty")
         if not body.strip():
             raise ValueError("Body cannot be empty")
-            
-        if not Checker.is_date(postDate):
+        if postDate and not Checker.is_date(postDate):
             raise ValueError(f"Invalid post date: '{postDate}'")
 
         self.authorId = authorId

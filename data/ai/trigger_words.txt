@@ -2,5 +2,6 @@ AI
 LLM
 d'IA
 l'IA
+AI’s
 IA
 Modèle de Langage

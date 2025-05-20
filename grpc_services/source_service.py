@@ -221,6 +221,7 @@ class SourceService(SourceServiceServicer):
                     f"Unexpected error scraping source {source.url}: {str(e)}",
                     exc_info=True,
                 )
+                # raise e
                 continue
 
     def _handle_content(

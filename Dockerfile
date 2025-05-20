@@ -51,7 +51,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/*
     
-RUN wget -O /bin/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 # 2) Install Python dependencies
 COPY --from=builder /app/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt

@@ -15,61 +15,64 @@ from utils.selector_generator import SelectorGenerator
 class ScrapeUtils:
     @staticmethod
     def scrape_news(url: str):
-        # Benchmark get_selector
-        start_get_selector = time.time()
-        html_content, general_selector = SelectorGenerator.get_scraping_selectors(
-            url,
-            NEWS_PROMPTS_PATH,
-        )
-        end_get_selector = time.time()
-        logger.info(
-            f"get_selector took {end_get_selector - start_get_selector:.2f} seconds"
-        )
-
-        # Benchmark BeautifulSoup parsing
-        start_parse = time.time()
-        soup = CustomSoup(html_content)
-        end_parse = time.time()
-        logger.info(f"HTML parsing took {end_parse - start_parse:.2f} seconds")
-
-        # Benchmark element selection
-        start_select = time.time()
-        page_url = soup.select_url(
-            base_url=url, css_selector=str(general_selector["link"])
-        )
-        title = soup.select_text(css_selector=str(general_selector["title"]))
-        end_select = time.time()
-        logger.info(f"Element selection took {end_select - start_select:.2f} seconds")
-
-        if page_url and title:
-            # Benchmark URL resolution
-            start_resolve = time.time()
-            page_url = CustomSoup.resolve_relative_url(url, page_url)
-            end_resolve = time.time()
+        try:
+            # Benchmark get_selector
+            start_get_selector = time.time()
+            html_content, general_selector = SelectorGenerator.get_scraping_selectors(
+                url,
+                NEWS_PROMPTS_PATH,
+            )
+            end_get_selector = time.time()
             logger.info(
-                f"URL resolution took {end_resolve - start_resolve:.2f} seconds"
+                f"get_selector took {end_get_selector - start_get_selector:.2f} seconds"
             )
 
-            # Benchmark news detail scraping
-            start_detail = time.time()
-            result = (
-                Helpers.try_until(
-                    lambda: __class__.scrape_news_detail(
-                        general_selector=general_selector,
-                        page_url=page_url,
-                        base_url=url,
-                        title=title,
-                    ),
-                    error_message="Failed in scrape_news_detail",
+            # Benchmark BeautifulSoup parsing
+            start_parse = time.time()
+            soup = CustomSoup(html_content)
+            end_parse = time.time()
+            logger.info(f"HTML parsing took {end_parse - start_parse:.2f} seconds")
+
+            # Benchmark element selection
+            start_select = time.time()
+            page_url = soup.select_url(
+                base_url=url, css_selector=str(general_selector["link"])
+            )
+            title = soup.select_text(css_selector=str(general_selector["title"]))
+            end_select = time.time()
+            logger.info(f"Element selection took {end_select - start_select:.2f} seconds")
+
+            if page_url and title:
+                # Benchmark URL resolution
+                start_resolve = time.time()
+                page_url = CustomSoup.resolve_relative_url(url, page_url)
+                end_resolve = time.time()
+                logger.info(
+                    f"URL resolution took {end_resolve - start_resolve:.2f} seconds"
                 )
-                or -1  # -1 just avoid retrying the hall thing again because other
-            )
-            end_detail = time.time()
-            logger.info(
-                f"News detail scraping took {end_detail - start_detail:.2f} seconds"
-            )
 
-            return result
+                # Benchmark news detail scraping
+                start_detail = time.time()
+                result = (
+                    Helpers.try_until(
+                        lambda: __class__.scrape_news_detail(
+                            general_selector=general_selector,
+                            page_url=page_url,
+                            base_url=url,
+                            title=title,
+                        ),
+                        error_message="Failed in scrape_news_detail",
+                    )
+                    or -1  # -1 just avoid retrying the hall thing again because other
+                )
+                end_detail = time.time()
+                logger.info(
+                    f"News detail scraping took {end_detail - start_detail:.2f} seconds"
+                )
+
+                return result
+        except Exception as e:
+            logger.error(f"Failed to scrape news: {str(e)}")
 
     @staticmethod
     def scrape_news_detail(
@@ -78,6 +81,7 @@ class ScrapeUtils:
         base_url: str,
         title: str,
     ):
+        logger.info(f"Scraping news details {base_url}")
         html_content, page_selector = SelectorGenerator.get_scraping_selectors(
             page_url,
             NEWS_DETAIL_PROMPTS_PATH,
@@ -137,7 +141,7 @@ class ScrapeUtils:
                 logger.info(f"Resolving author link: {author_link}")
                 author_link = CustomSoup.resolve_relative_url(page_url, author_link)
 
-            if body and post_date:
+            if body:
                 logger.info(f"Body text length: {len(body)} characters")
 
                 if "cookies" in body:
@@ -179,6 +183,7 @@ class ScrapeUtils:
                         categoryId=None,  # will add it later in the news service
                     )
                 except ValueError as e:
+                    logger.info(f"Validation error: {e}")
                     logger.error(f"Validation error: {e}")
                     return None
 
@@ -225,6 +230,8 @@ class ScrapeUtils:
                     "selector": selector,
                     "data": page_data,
                 }
+            else:
+                raise Exception(f"Body or postdate does not exists {body} {post_date}")
         except Exception as e:
-            logger.error(f"Error in scrape_news_detail: {e}", exc_info=True)
-            return None
+            logger.info(f"Failed to scrape news details: {str(e)}")
+            logger.error(f"Failed to scrape news details: {str(e)}")

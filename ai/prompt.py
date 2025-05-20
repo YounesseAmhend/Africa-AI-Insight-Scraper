@@ -23,10 +23,10 @@ class Prompt:
             prompt_template_path: Path to the template file
             html_content: HTML content to be used in the prompt
         """
+        self.template_path = template_path
 
         match type:
             case PromptType.HTML:
-                self.template_path = template_path
                 self.html_content = content
                 self.text = self.create_prompt_from_html()
             case _:

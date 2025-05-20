@@ -43,7 +43,7 @@ def test_grpc_functions():
     logger.info("Testing addSource...")
 
     client.add_source(
-        url="https://www.news.uct.ac.za/article/-action/list/-archive/news/-category/all/-year/all/-month/all",
+        url="https://ui.edu.ng/news",
         contains_ai=False,
         contains_africa=True,
     )
