@@ -4,6 +4,7 @@ from psycopg2.extras import Json
 
 from config.db import DatabaseConfig
 from dtypes.selector import Selector
+from models.enums.scrape_status import ScrapeStatus
 from models.source import Source, SourceUpdate
 from protos.source_pb2 import SourceRequest
 from utils.logger import logger
@@ -87,6 +88,32 @@ class SourceRepository:
         except Exception as e:
             logger.error(f"Error retrieving sources: {e}")
             raise
+        
+    def set_status(self, id: int, status: ScrapeStatus) -> None:
+        """
+        Set the scrape status for a given source ID
+
+        :param id: Source ID to update
+        :param status: ScrapeStatus enum value to set
+        """
+        update_query = """
+        UPDATE sources
+        SET status = %s
+        WHERE id = %s
+        """
+        try:
+            with self.db_config.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        update_query,
+                        (status.value, id),
+                    )
+                conn.commit()
+                logger.info(f"Status updated to {status.value} for source ID: {id}")
+        except Exception as e:
+            logger.error(f"Error updating status: {e}")
+            raise
+                
 
     def get_source(self, id: int) -> Source:
         """
