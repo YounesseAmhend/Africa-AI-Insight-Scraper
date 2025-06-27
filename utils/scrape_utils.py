@@ -183,7 +183,6 @@ class ScrapeUtils:
                         categoryId=None,  # will add it later in the news service
                     )
                 except ValueError as e:
-                    logger.info(f"Validation error: {e}")
                     logger.error(f"Validation error: {e}")
                     return None
 

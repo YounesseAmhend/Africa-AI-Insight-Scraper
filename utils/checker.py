@@ -24,28 +24,119 @@ class Checker:
         date_string = __class__.clean_date(date_string)
 
         date_formats = [
-            "%A, %B %d, %Y",  # Weekday, Full month name, day, year
-            "%B %d, %Y",  # Full month name, day, year
-            "%Y-%m-%d",  # ISO format
-            "%m/%d/%Y",  # US format
-            "%d/%m/%Y",  # European format
-            "%b %d, %Y",  # Month name, day, year
-            "%B %d, %Y",  # Full month name, day, year
+            # Basic formats
+            "%Y-%m-%d",  # ISO 8601
+            "%m/%d/%Y",  # US
+            "%d/%m/%Y",  # European
+            "%Y.%m.%d",  # Dot notation
+            "%Y%m%d",  # Compact ISO
+            "%d-%m-%Y",  # Day-month-year
+            "%m-%d-%Y",  # US with hyphens
+            "%d.%m.%Y",  # European with dots
             "%Y/%m/%d",  # Year/month/day
             "%d-%m-%Y",  # Day-month-year
             "%Y.%m.%d",  # Year.month.day
             "%d %b %Y",  # Day Month(abbr) Year
             "%d %B %Y",  # Day Month(full) Year
-            "%Y%m%d",    # Compact ISO format
+            "%b %d, %Y",  # Month(abbr) Day, Year
+            "%B %d, %Y",  # Month(full) Day, Year
+            "%A, %B %d, %Y",  # Weekday, Month(full) Day, Year
+            "%Y年%m月%d日",  # Chinese
+            "%Y년 %m월 %d일",  # Korean
+            "%d/%m/%y",  # European with 2-digit year
+            "%m/%d/%y",  # US with 2-digit year
+            "%y-%m-%d",  # ISO with 2-digit year
+            "%d-%b-%y",  # Day-Month(abbr)-2-digit year
+            "%d-%B-%y",  # Day-Month(full)-2-digit year
+            "%b %d %y",  # Month(abbr) Day 2-digit year
+            "%B %d %y",  # Month(full) Day 2-digit year
+            "%Y%m%d",  # Compact ISO format
             "%m-%d-%Y",  # US format with hyphens
             "%d.%m.%Y",  # European format with dots
             "%Y-%b-%d",  # Year-Month(abbr)-Day
             "%Y-%B-%d",  # Year-Month(full)-Day
-            "%b %Y",     # Month(abbr) Year
-            "%B %Y",     # Month(full) Year
-            "%Y",        # Year only
-            "%m/%Y",     # Month/Year
-            "%Y-%m",     # Year-Month
+            # Year-only formats
+            "%Y",  # Year only
+            "%y",  # 2-digit year
+            # Month-Year formats
+            "%b %Y",  # Month(abbr) Year
+            "%Y%m%d",  # Compact ISO format
+            "%m-%d-%Y",  # US format with hyphens
+            "%d.%m.%Y",  # European format with dots
+            "%Y-%b-%d",  # Year-Month(abbr)-Day
+            "%Y-%B-%d",  # Year-Month(full)-Day
+            "%B %Y",  # Month(full) Year
+            "%Y",  # Year only
+            "%m/%Y",  # Month/Year
+            "%Y-%m",  # Year-Month
+            "%Y年%m月",  # Chinese Year-Month
+            "%Y년 %m월",  # Korean Year-Month
+            # Time formats
+            "%H:%M",  # 24-hour time
+            "%I:%M %p",  # 12-hour time
+            "%H:%M:%S",  # 24-hour with seconds
+            "%I:%M:%S %p",  # 12-hour with seconds
+            "%H:%M:%S.%f",  # With microseconds
+            "%H:%M:%S %Z",  # With timezone
+            "%H:%M:%S %z",  # With UTC offset
+            # Combined date-time formats
+            "%Y-%m-%d %H:%M",  # ISO with time
+            "%Y-%m-%d %H:%M:%S",  # ISO with seconds
+            "%Y-%m-%d %H:%M:%S.%f",  # ISO with microseconds
+            "%Y-%m-%dT%H:%M:%S",  # ISO 8601
+            "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 with Zulu
+            "%Y-%m-%dT%H:%M:%S.%fZ",  # ISO 8601 with microseconds and Zulu
+            "%Y-%m-%dT%H:%M:%S%z",  # ISO 8601 with UTC offset
+            "%Y-%m-%dT%H:%M:%S.%f%z",  # ISO 8601 with microseconds and UTC offset
+            "%m/%d/%Y %I:%M %p",  # US with 12-hour time
+            "%d/%m/%Y %H:%M",  # European with time
+            "%d/%m/%Y %H:%M:%S",  # European with seconds
+            "%Y%m%d%H%M%S",  # Compact ISO with time
+            "%Y%m%d%H%M%S%z",  # Compact ISO with UTC offset
+            "%Y%m%d%H%M%S.%f",  # Compact ISO with microseconds
+            "%Y%m%d%H%M%S.%f%z",  # Compact ISO with microseconds and UTC offset
+            # Special formats
+            "%a, %d %b %Y %H:%M:%S %Z",  # RFC 822
+            "%A, %d %B %Y %H:%M:%S",  # Full weekday with time
+            "%a %b %d %H:%M:%S %Y",  # Unix date
+            "%a %b %d %H:%M:%S %Z %Y",  # Unix date with timezone
+            "%Y年%m月%d日 %H:%M:%S",  # Chinese with time
+            "%Y년 %m월 %d일 %H:%M:%S",  # Korean with time
+            "%d %B %Y %H:%M:%S",  # French with full month
+            "%d %b %Y %H:%M:%S",  # French with abbreviated month
+            # Custom formats
+            "%a, %m/%d/%Y - %H:%M",  # Thu, 06/26/2025 - 14:22
+            "%a, %d/%m/%Y - %H:%M",  # Thu, 26/06/2025 - 14:22
+            "%a, %Y/%m/%d - %H:%M",  # Thu, 2025/06/26 - 14:22
+            "%a, %m-%d-%Y - %H:%M",  # Thu, 06-26-2025 - 14:22
+            "%a, %d-%m-%Y - %H:%M",  # Thu, 26-06-2025 - 14:22
+            "%a, %Y-%m-%d - %H:%M",  # Thu, 2025-06-26 - 14:22
+            "%a %b %d %Y at %I:%M %p",  # Thu Jun 26 2025 at 02:22 PM
+            "%A, %B %d, %Y at %I:%M %p",  # Thursday, June 26, 2025 at 02:22 PM
+            "Le %d %B %Y à %H:%M",  # French format
+            "El %d de %B de %Y a las %H:%M",  # Spanish format
+            "Am %d.%m.%Y um %H:%M Uhr",  # German format
+            "%Y年%m月%d日 %H時%M分%S秒",  # Japanese format
+            "%Y년 %m월 %d일 %H시 %M분 %S초",  # Korean format with time
+            "%d/%m/%Y %H:%M:%S %Z",  # European with timezone
+            "%m/%d/%Y %I:%M:%S %p %Z",  # US with 12-hour time and timezone
+            "%Y-%m-%d %H:%M:%S %Z",  # ISO with timezone
+            "%Y-%m-%d %H:%M:%S %z",  # ISO with UTC offset
+            "%Y-%m-%d %H:%M:%S.%f %Z",  # ISO with microseconds and timezone
+            "%Y-%m-%d %H:%M:%S.%f %z",  # ISO with microseconds and UTC offset
+            "%Y年%m月%d日 %H:%M:%S",  # Chinese with time
+            "%Y년 %m월 %d일 %H:%M:%S",  # Korean with time
+            "%d/%m/%Y %H:%M:%S %Z",  # European with timezone
+            "%m/%d/%Y %I:%M:%S %p %Z",  # US with 12-hour time and timezone
+            "%Y%m%d%H%M%S",  # Compact ISO with seconds
+            "%Y%m%d%H%M%S%z",  # Compact ISO with seconds and UTC offset
+            "%Y%m%d%H%M%S.%f",  # Compact ISO with seconds and microseconds
+            "%Y%m%d%H%M%S.%f%z",  # Compact ISO with seconds, microseconds and UTC offset
+            "%d %B %Y %H:%M:%S",  # French with full month
+            "%d %b %Y %H:%M:%S",  # French with abbreviated month
+            "%Y-%m-%d %H:%M:%S",  # ISO with time
+            "%Y/%m/%d %H:%M:%S",  # Year/month/day with time
+            "%d-%m-%Y %H:%M:%S",  # Day-month-year with time
             "%d-%b-%Y",  # Day-Month(abbr)-Year
             "%d-%B-%Y",  # Day-Month(full)-Year
             "%Y %b %d",  # Year Month(abbr) Day
@@ -163,6 +254,18 @@ class Checker:
             "%a %b %d %H:%M:%S %Y",  # Unix date format
             "%a %b %d %H:%M:%S %Z %Y",  # Unix date format with timezone
             "%Y年%m月%d日 %H:%M:%S",  # Chinese format with time
+            "%a, %m/%d/%Y - %H:%M",  # Thu, 06/26/2025 - 14:22 format
+            "%a, %d/%m/%Y - %H:%M",  # Thu, 26/06/2025 - 14:22 format
+            "%a, %Y/%m/%d - %H:%M",  # Thu, 2025/06/26 - 14:22 format
+            "%a, %m-%d-%Y - %H:%M",  # Thu, 06-26-2025 - 14:22 format
+            "%a, %d-%m-%Y - %H:%M",  # Thu, 26-06-2025 - 14:22 format
+            "%a, %Y-%m-%d - %H:%M",  # Thu, 2025-06-26 - 14:22 format
+            "%a, %m/%d/%Y - %H:%M:%S",  # Thu, 06/26/2025 - 14:22:30 format
+            "%a, %d/%m/%Y - %H:%M:%S",  # Thu, 26/06/2025 - 14:22:30 format
+            "%a, %Y/%m/%d - %H:%M:%S",  # Thu, 2025/06/26 - 14:22:30 format
+            "%a, %m-%d-%Y - %H:%M:%S",  # Thu, 06-26-2025 - 14:22:30 format
+            "%a, %d-%m-%Y - %H:%M:%S",  # Thu, 26-06-2025 - 14:22:30 format
+            "%a, %Y-%m-%d - %H:%M:%S",  # Thu, 2025-06-26 - 14:22:30 format
         ]
         # Try parsing with each format
         for fmt in date_formats:
