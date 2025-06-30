@@ -113,12 +113,21 @@ def is_valid_article(
 
 
 class SourceService(SourceServiceServicer):
+    _is_scraping = False
+
     def scrape(
         self,
         request: ScrapeRequest,
         context: ServicerContext,
     ) -> ScrapeResponse:
-        self._scrape()
+        if self.__class__._is_scraping:
+            logger.info("Scrape request ignored: already scraping in progress.")
+            return ScrapeResponse()  # Ignore new request
+        self.__class__._is_scraping = True
+        try:
+            self._scrape()
+        finally:
+            self.__class__._is_scraping = False
         return ScrapeResponse()
 
     def _scrape(self):

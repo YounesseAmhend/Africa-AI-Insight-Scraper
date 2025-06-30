@@ -1,6 +1,5 @@
 import time
 
-from ai.llm import Llm
 from constants import NEWS_DETAIL_PROMPTS_PATH, NEWS_PROMPTS_PATH
 from dtypes.news_dict import NewsDict
 from dtypes.selector import Selector
@@ -40,7 +39,9 @@ class ScrapeUtils:
             )
             title = soup.select_text(css_selector=str(general_selector["title"]))
             end_select = time.time()
-            logger.info(f"Element selection took {end_select - start_select:.2f} seconds")
+            logger.info(
+                f"Element selection took {end_select - start_select:.2f} seconds"
+            )
 
             if page_url and title:
                 # Benchmark URL resolution
@@ -232,5 +233,4 @@ class ScrapeUtils:
             else:
                 raise Exception(f"Body or postdate does not exists {body} {post_date}")
         except Exception as e:
-            logger.info(f"Failed to scrape news details: {str(e)}")
             logger.error(f"Failed to scrape news details: {str(e)}")
