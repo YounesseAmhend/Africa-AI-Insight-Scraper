@@ -21,17 +21,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /opt/microsoft/msedge-dev/MEIPreload
 
-# 2) Install only gRPC build tools for stub generation
-COPY requirements.txt ./
-RUN pip install --no-cache-dir grpcio-tools==1.69.0
-
-# 3) Generate Python gRPC modules from .proto files
-COPY protos/ ./protos/
-RUN python -m grpc_tools.protoc \
-      -Iprotos \
-      --python_out=. \
-      --grpc_python_out=. \
-      protos/*.proto
 
 # 4) Copy application code
 COPY . .
@@ -51,7 +40,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/*
     
-RUN wget -O /bin/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 # 2) Install Python dependencies
 COPY --from=builder /app/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
@@ -65,4 +53,5 @@ ENV PATH="/opt/msedgedriver:${PATH}"
 RUN chmod +x /opt/msedgedriver/msedgedriver \
     && ln -s /opt/msedgedriver/msedgedriver /usr/local/bin/msedgedriver
 
+# 5) Expose gRPC port and start the server
 CMD ["python", "app.py"]

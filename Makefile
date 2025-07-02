@@ -24,7 +24,7 @@ build:
 	docker build . -t scraper
 
 run:
-	docker run -p 50051:50051 scraper
+	docker run -p 3013:3013 scraper
 
 delete-build:
 	docker rmi -f scraper

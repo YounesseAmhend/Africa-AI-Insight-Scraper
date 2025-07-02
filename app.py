@@ -8,7 +8,7 @@ from settings import PORT
 from utils.logger import logger
 
 
-
+# TODO: make sure to return an error if the source has the base url it's never the base url
 def serve() -> None:
 
     server = grpc.server(ThreadPoolExecutor(max_workers=10))

@@ -31,7 +31,25 @@ class NewsService:
 
         logger.info("Starting summarization of news article")
         summary_result = MultilingualSummarizer().summarize(news.body)
-        news.body = summary_result
+        if '<body>' in summary_result:
+            body_start = summary_result.find('<body>') + len('<body>')
+            body_end = summary_result.find('</body>')
+            body_content = summary_result[body_start:body_end].strip()
+        else:
+            body_content = summary_result
+
+        # Handle [IMAGE HERE] tags
+        if news.imageUrl:
+            # Replace first [IMAGE HERE] with actual image tag
+            body_content = body_content.replace(
+                "[IMAGE HERE]",
+                f'<img class="image-placeholder" src="{news.imageUrl}" />',
+                1,
+            )
+        # Remove any remaining [IMAGE HERE] tags
+        body_content = body_content.replace('[IMAGE HERE]', '')
+
+        news.body = body_content
         logger.info(f"Summary generated: {news.body[:100]}...")
 
         logger.info("Adding news article to repository")

@@ -17,7 +17,7 @@ Generate a Python dictionary conforming to the following structure:
 
 2. **Link Identification**: Determine the exact CSS selector that points to the HTML elements containing the hyperlinks to individual news articles. The selector should consistently retrieve all article links.
 
-3. **Load More Detection**: If the webpage implements infinite scrolling or a "load more" functionality, identify the CSS selector for the corresponding button or trigger element. If this feature is absent, explicitly set this value to `None`.
+3. **Load More Detection**: If the webpage implements infinite scrolling or a "load more" functionality(or any similar button), identify the CSS selector for the corresponding button or trigger element. If this feature is absent, explicitly set this value to `None`.
 
 4. **Pagination Navigation**: If the site uses pagination, identify the correct **"Next Page"** button using the following rules:
    - **DO NOT select elements based on their position (e.g., `:last-child`, `:nth-child`, `:not(:first-child)`, etc.).**  

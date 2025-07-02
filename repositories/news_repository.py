@@ -44,11 +44,11 @@ class NewsRepository:
                 createdAt
             ) VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP
-            )
+            ) ON CONFLICT (url) DO UPDATE SET body = EXCLUDED.body
         """
 
         # Convert post_date from string to datetime if it exists
-        date = Checker.get_date(data.postDate)
+        date = Checker.get_date(data.postDate or '')
         if date is None:
             logger.info(f"Could not parse date: {data.postDate}")
         params = (

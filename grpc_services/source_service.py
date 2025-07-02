@@ -17,6 +17,7 @@ from dtypes.selector import Selector
 from iterators.infinite_scrolling_iterator import InfiniteScrollIterator
 from iterators.pagination_iterator import PaginationIterator
 from models.author import Author
+from models.enums.scrape_status import ScrapeStatus
 from models.news import NewsAdd
 from models.source import Source, SourceUpdate
 from protos.source_pb2 import (
@@ -112,12 +113,21 @@ def is_valid_article(
 
 
 class SourceService(SourceServiceServicer):
+    _is_scraping = False
+
     def scrape(
         self,
         request: ScrapeRequest,
         context: ServicerContext,
     ) -> ScrapeResponse:
-        self._scrape()
+        if self.__class__._is_scraping:
+            logger.info("Scrape request ignored: already scraping in progress.")
+            return ScrapeResponse()  # Ignore new request
+        self.__class__._is_scraping = True
+        try:
+            self._scrape()
+        finally:
+            self.__class__._is_scraping = False
         return ScrapeResponse()
 
     def _scrape(self):
@@ -155,8 +165,9 @@ class SourceService(SourceServiceServicer):
         trigger_africa = source.triggerAfrica
         driver.get(url)
 
-        MAX_RETRIES = 3
+        source_repository.set_status(source.id, ScrapeStatus.FETCHING)
 
+        MAX_RETRIES = 3
         for i in range(MAX_RETRIES):
             if i > 0:
                 source = source_repository.get_source(source.id)
@@ -189,8 +200,8 @@ class SourceService(SourceServiceServicer):
                     limit,
                     timeout_s,
                 )
-
-                break
+                source_repository.set_status(source.id, ScrapeStatus.AVAILABLE)
+                return
 
             except ParserRejectedMarkup as e:
                 logger.error(
@@ -221,7 +232,9 @@ class SourceService(SourceServiceServicer):
                     f"Unexpected error scraping source {source.url}: {str(e)}",
                     exc_info=True,
                 )
+                # raise e
                 continue
+        source_repository.set_status(source.id, ScrapeStatus.UNAVAILABLE)
 
     def _handle_content(
         self,
