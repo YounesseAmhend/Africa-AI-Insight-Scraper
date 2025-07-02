@@ -65,6 +65,4 @@ ENV PATH="/opt/msedgedriver:${PATH}"
 RUN chmod +x /opt/msedgedriver/msedgedriver \
     && ln -s /opt/msedgedriver/msedgedriver /usr/local/bin/msedgedriver
 
-# 5) Expose gRPC port and start the server
-EXPOSE 50051
 CMD ["python", "app.py"]
