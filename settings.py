@@ -14,7 +14,7 @@ GEMINI_MODEL = "gemini-2.0-flash"
 MAX_OUTPUT_TOKENS = 8192
 
 
-PORT = "50051"
+PORT = "3015"
 
 LAST_FETCH_DATE = date(
     year=2020,
