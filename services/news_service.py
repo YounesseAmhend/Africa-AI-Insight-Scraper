@@ -48,7 +48,7 @@ class NewsService:
             )
         # Remove any remaining [IMAGE HERE] tags
         body_content = body_content.replace('[IMAGE HERE]', '')
-
+        body_content = body_content.replace('<div class="image-placeholder"></div>', "")
         news.body = body_content
         logger.info(f"Summary generated: {news.body[:100]}...")
 
