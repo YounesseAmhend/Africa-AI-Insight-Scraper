@@ -1,8 +1,6 @@
 import os
 from contextlib import contextmanager
 
-from psycopg2.pool import SimpleConnectionPool
-
 from constants import (
     AUTHORS_TABLE_SCHEMA,
     CATEGORY_TABLE_SCHEMA,
@@ -10,7 +8,10 @@ from constants import (
     SOURCE_TABLE_SCHEMA,
     STATISTICS_TABLE_SCHEMA,
 )
+from psycopg2.pool import SimpleConnectionPool
 from utils.logger import logger
+
+from scraper.settings import WORKERS_COUNT
 
 
 class DatabaseConfig:
@@ -27,7 +28,7 @@ class DatabaseConfig:
             # Move create_tables to after initialization
         return cls._instance
 
-    def __init__(self, min_connections: int = 1, max_connections: int = 10):
+    def __init__(self, min_connections: int = None, max_connections: int = None):
         """
         Initialize database connection pool
         """
@@ -59,6 +60,10 @@ class DatabaseConfig:
 
         # Create connection pool
         try:
+            min_connections = min_connections or int(os.getenv("DB_POOL_MIN", 1))
+            max_connections = max_connections or int(
+                os.getenv("DB_POOL_MAX", WORKERS_COUNT)
+            )
             self.connection_pool = SimpleConnectionPool(
                 min_connections, max_connections, **self.connection_params
             )

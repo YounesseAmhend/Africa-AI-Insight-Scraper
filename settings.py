@@ -1,6 +1,5 @@
 from datetime import date
 
-
 DEBUG_MODE = False
 
 
@@ -14,6 +13,8 @@ GEMINI_MODEL = "gemini-2.0-flash"
 MAX_OUTPUT_TOKENS = 8192
 
 
+WORKERS_COUNT = 6
+
 PORT = "3015"
 
 LAST_FETCH_DATE = date(
@@ -21,4 +22,3 @@ LAST_FETCH_DATE = date(
     month=1,
     day=1,
 )
-

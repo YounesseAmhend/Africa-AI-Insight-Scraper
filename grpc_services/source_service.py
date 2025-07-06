@@ -1,11 +1,11 @@
 import datetime
+import queue
+import threading
 import time
 
 import pytz
-from bs4 import BeautifulSoup, ParserRejectedMarkup
-from grpc import ServicerContext
-
 from ai.llm import Llm
+from bs4 import BeautifulSoup, ParserRejectedMarkup
 from constants import (
     AFRICA_TRIGGER_PHRASES_PATH,
     AFRICA_TRIGGER_WORDS_PATH,
@@ -14,6 +14,7 @@ from constants import (
 )
 from dtypes.author_dict import AuthorDict
 from dtypes.selector import Selector
+from grpc import ServicerContext
 from iterators.infinite_scrolling_iterator import InfiniteScrollIterator
 from iterators.pagination_iterator import PaginationIterator
 from models.author import Author
@@ -31,7 +32,7 @@ from repositories.author_repository import AuthorRepository
 from repositories.source_repository import SourceRepository
 from services.news_service import NewsService
 from services.statistics_service import StatisticsService
-from settings import DEBUG_MODE, LAST_FETCH_DATE
+from settings import DEBUG_MODE, LAST_FETCH_DATE, WORKERS_COUNT
 from utils.checker import Checker
 from utils.custom_driver import CustomDriver
 from utils.custom_soup import CustomSoup
@@ -131,26 +132,47 @@ class SourceService(SourceServiceServicer):
         return ScrapeResponse()
 
     def _scrape(self):
-        author_repository = AuthorRepository()
         source_repository = SourceRepository()
-        news_service = NewsService()
         statistics_service = StatisticsService()
 
         statistics_service.get_stats()
         sources = source_repository.get_sources()
 
-        driver = CustomDriver()
+        sources_queue = queue.Queue()
 
-        for source in sources:
-            self._handle_source(
-                author_repository,
-                source_repository,
-                news_service,
-                driver,
-                source,
-            )
+        for item in sources:
+            sources_queue.put(item)
 
-        driver.quit()
+        def worker():
+            while True:
+                try:
+                    source = sources_queue.get_nowait()  # Non-blocking
+                except queue.Empty:
+                    break  # No more tasks
+                author_repository = AuthorRepository()
+                source_repository = SourceRepository()
+                news_service = NewsService()
+                driver = CustomDriver()
+
+                self._handle_source(
+                    author_repository,
+                    source_repository,
+                    news_service,
+                    driver,
+                    source,
+                )
+                driver.quit()
+
+                sources_queue.task_done()
+
+        threads = []
+        for _ in range(WORKERS_COUNT):
+            t = threading.Thread(target=worker)
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
 
     def _handle_source(
         self,
@@ -166,7 +188,7 @@ class SourceService(SourceServiceServicer):
         driver.get(url)
 
         source_repository.set_status(source.id, ScrapeStatus.FETCHING)
-        try :
+        try:
             MAX_RETRIES = 3
             for i in range(MAX_RETRIES):
                 if i > 0:
@@ -551,7 +573,7 @@ class SourceService(SourceServiceServicer):
 
             except Exception as e:
                 record_id = source_repo.upsert_source(
-                    selector=dict(), # type: ignore
+                    selector=dict(),  # type: ignore
                     source=request,
                 )
                 logger.error(f"Failed to store source: {e}")
