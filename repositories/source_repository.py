@@ -191,15 +191,17 @@ class SourceRepository:
         :return: Inserted/Updated record ID
         """
 
+        status = ScrapeStatus.UNAVAILABLE.value if not selector else ScrapeStatus.AVAILABLE.value
         insert_query = """
         INSERT INTO sources 
-            (url, selector, triggerAfrica, triggerAi, createdAt)
-        VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+            (url, selector, triggerAfrica, triggerAi, createdAt, status)
+        VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, %s)
         ON CONFLICT (url) DO UPDATE SET
             selector = EXCLUDED.selector,
             triggerAfrica = EXCLUDED.triggerAfrica, 
             triggerAi = EXCLUDED.triggerAi,
-            createdAt = CURRENT_TIMESTAMP
+            createdAt = CURRENT_TIMESTAMP,
+            status = EXCLUDED.status
         RETURNING id
         """
         try:
@@ -212,6 +214,7 @@ class SourceRepository:
                             Json(selector),
                             not source.containsAfricaContent,
                             not source.containsAiContent,
+                            status,
                         ),
                     )
                     record_id: int = cur.fetchone()[0]

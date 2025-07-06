@@ -14,7 +14,7 @@ from constants import (
 )
 from dtypes.author_dict import AuthorDict
 from dtypes.selector import Selector
-from iterators.infinite_scrolling_iterator import InfiniteScrollIterator
+from grpc_services.infinite_scrolling_iterator import InfiniteScrollIterator
 from iterators.pagination_iterator import PaginationIterator
 from models.author import Author
 from models.enums.scrape_status import ScrapeStatus
@@ -166,75 +166,77 @@ class SourceService(SourceServiceServicer):
         driver.get(url)
 
         source_repository.set_status(source.id, ScrapeStatus.FETCHING)
+        try :
+            MAX_RETRIES = 3
+            for i in range(MAX_RETRIES):
+                if i > 0:
+                    source = source_repository.get_source(source.id)
 
-        MAX_RETRIES = 3
-        for i in range(MAX_RETRIES):
-            if i > 0:
-                source = source_repository.get_source(source.id)
+                selector: Selector = source.selector  # type: ignore
+                author_selector = selector["author"]
 
-            selector: Selector = source.selector  # type: ignore
-            author_selector = selector["author"]
+                next_button_selector = selector["next_button"]
+                load_more_selector = selector["load_more_button"]
 
-            next_button_selector = selector["next_button"]
-            load_more_selector = selector["load_more_button"]
+                logger.info(f"Navigating to URL: {url}")
 
-            logger.info(f"Navigating to URL: {url}")
+                try:
+                    limit: int | None = None
 
-            try:
-                limit: int | None = None
+                    timeout_s: float = 10
+                    self._handle_content(
+                        author_repository,
+                        source_repository,
+                        news_service,
+                        driver,
+                        source,
+                        url,
+                        trigger_ai,
+                        trigger_africa,
+                        selector,
+                        author_selector,
+                        next_button_selector,
+                        load_more_selector,
+                        limit,
+                        timeout_s,
+                    )
+                    source_repository.set_status(source.id, ScrapeStatus.AVAILABLE)
+                    return
 
-                timeout_s: float = 10
-                self._handle_content(
-                    author_repository,
-                    source_repository,
-                    news_service,
-                    driver,
-                    source,
-                    url,
-                    trigger_ai,
-                    trigger_africa,
-                    selector,
-                    author_selector,
-                    next_button_selector,
-                    load_more_selector,
-                    limit,
-                    timeout_s,
-                )
-                source_repository.set_status(source.id, ScrapeStatus.AVAILABLE)
-                return
-
-            except ParserRejectedMarkup as e:
-                logger.error(
-                    f"HTML parsing error scraping source {source.url}: {str(e)}",
-                    exc_info=True,
-                )
-                continue
-            except KeyError as e:
-                logger.error(
-                    f"Missing selector key error scraping source {source.url}: {str(e)}",
-                    exc_info=True,
-                )
-                continue
-            except AttributeError as e:
-                logger.error(
-                    f"Attribute access error scraping source {source.url}: {str(e)}",
-                    exc_info=True,
-                )
-                continue
-            except ValueError as e:
-                logger.error(
-                    f"Value error scraping source {source.url}: {str(e)}",
-                    exc_info=True,
-                )
-                continue
-            except Exception as e:
-                logger.error(
-                    f"Unexpected error scraping source {source.url}: {str(e)}",
-                    exc_info=True,
-                )
-                # raise e
-                continue
-        source_repository.set_status(source.id, ScrapeStatus.UNAVAILABLE)
+                except ParserRejectedMarkup as e:
+                    logger.error(
+                        f"HTML parsing error scraping source {source.url}: {str(e)}",
+                        exc_info=True,
+                    )
+                    continue
+                except KeyError as e:
+                    logger.error(
+                        f"Missing selector key error scraping source {source.url}: {str(e)}",
+                        exc_info=True,
+                    )
+                    continue
+                except AttributeError as e:
+                    logger.error(
+                        f"Attribute access error scraping source {source.url}: {str(e)}",
+                        exc_info=True,
+                    )
+                    continue
+                except ValueError as e:
+                    logger.error(
+                        f"Value error scraping source {source.url}: {str(e)}",
+                        exc_info=True,
+                    )
+                    continue
+                except Exception as e:
+                    logger.error(
+                        f"Unexpected error scraping source {source.url}: {str(e)}",
+                        exc_info=True,
+                    )
+                    # raise e
+                    continue
+            source_repository.set_status(source.id, ScrapeStatus.UNAVAILABLE)
+        except:
+            source_repository.set_status(source.id, ScrapeStatus.UNAVAILABLE)
 
     def _handle_content(
         self,
@@ -548,6 +550,10 @@ class SourceService(SourceServiceServicer):
                 result["db_record_id"] = record_id  # type: ignore
 
             except Exception as e:
+                record_id = source_repo.upsert_source(
+                    selector=dict(), # type: ignore
+                    source=request,
+                )
                 logger.error(f"Failed to store source: {e}")
 
         return result

@@ -21,13 +21,25 @@ class InfiniteScrollIterator:
 
         self.wait = WebDriverWait(custom_driver.driver, timeout=timeout_s)
         self.custom_driver = custom_driver
-        self.css_selector = css_selector
+        self.css_selector = css_selector if css_selector and self._selector_exists(css_selector) else None
         self.max_loads = limit
         self.current_load = 0
         self.html: str = ""
 
     def __iter__(self):
         return self
+    
+    def _selector_exists(self, css_selector: str) -> bool:
+        """Check if a CSS selector exists on the page
+        
+        :param css_selector: CSS selector to check
+        :return: True if selector exists, False otherwise
+        """
+        try:
+            self.custom_driver.driver.find_element(By.CSS_SELECTOR, css_selector)
+            return True
+        except NoSuchElementException:
+            return False
 
     def __next__(self) -> str:
         if self.max_loads and self.current_load >= self.max_loads:

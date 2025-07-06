@@ -1,5 +1,4 @@
 beautifulsoup4
-requests
 selenium
 google-genai
 python-dotenv
@@ -13,6 +12,7 @@ grpcio-health-checking
 protobuf 
 mypy-protobuf 
 types-protobuf 
+requests
 googleapis-common-protos
 pytz
 fasttext-wheel
