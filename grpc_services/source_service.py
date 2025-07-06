@@ -14,7 +14,7 @@ from constants import (
 )
 from dtypes.author_dict import AuthorDict
 from dtypes.selector import Selector
-from grpc_services.infinite_scrolling_iterator import InfiniteScrollIterator
+from iterators.infinite_scrolling_iterator import InfiniteScrollIterator
 from iterators.pagination_iterator import PaginationIterator
 from models.author import Author
 from models.enums.scrape_status import ScrapeStatus
