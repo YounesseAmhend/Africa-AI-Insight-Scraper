@@ -11,7 +11,7 @@ from constants import (
 from psycopg2.pool import SimpleConnectionPool
 from utils.logger import logger
 
-from scraper.settings import WORKERS_COUNT
+from settings import WORKERS_COUNT
 
 
 class DatabaseConfig:
