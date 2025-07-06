@@ -21,3 +21,4 @@ LAST_FETCH_DATE = date(
     month=1,
     day=1,
 )
+

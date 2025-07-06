@@ -27,6 +27,7 @@ from utils.logger import logger
 
 class CustomDriver:
     DEFAULT_TIMEOUT_S = 10
+    DRIVER_TIMEOUT_S = 300  # Increased timeout for driver operations
 
     def __init__(self) -> None:
         # Use the correct path for Edge driver in Docker
@@ -37,24 +38,15 @@ class CustomDriver:
         if not DEBUG_MODE:
             self.options.add_argument("--headless")
 
-        self.options.add_argument("--incognito")
-        self.options.add_argument("--disable-blink-features=AutomationControlled")
-        self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        self.options.add_experimental_option("useAutomationExtension", False)
-
-        # Add arguments to improve performance and stability
-        self.options.add_argument("--disable-extensions")
-        self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--disable-dev-shm-usage")
-        self.options.add_argument("--disable-browser-side-navigation")
-        self.options.add_argument("--disable-infobars")
         self.options.add_argument("--no-sandbox")
-        self.options.add_argument("--disable-features=NetworkService")
-        self.options.add_argument("--disable-features=VizDisplayCompositor")
-        self.options.add_argument("--disable-software-rasterizer")
-        self.options.add_argument("--ignore-certificate-errors")
+        self.options.add_argument("--headless")
+        self.options.add_argument("--disable-dev-shm-usage")
+        self.options.add_argument("--disable-gpu")
 
+        # Set page load timeout and script timeout
         self.driver = webdriver.Edge(service=self.service, options=self.options)
+        self.driver.set_page_load_timeout(self.DRIVER_TIMEOUT_S)
+        self.driver.set_script_timeout(self.DRIVER_TIMEOUT_S)
 
         # Further anti-detection: modify navigator.webdriver property using CDP
         # This helps bypass more sophisticated detection mechanisms

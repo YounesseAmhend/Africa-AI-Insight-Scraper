@@ -36,6 +36,6 @@ class SelectorGenerator:
         result = llm.prompt(prompt)
         logger.info(f"Generated selectors: {result}")
 
-        selectors = result.code
+        selectors: dict[str, object | dict] = result.code # type: ignore
 
         return html_content, selectors
